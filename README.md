@@ -112,7 +112,6 @@ Bitcoin Venezuela | OK | Crypto | No | ticker from api with 15 minutes delay, no
 BitsharesFeed | OK | Crypto (MPA) | No | current feed price in Bitshares DEX, no volume.
 Bitstamp | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
 Bittrex | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
-ChBTC | WARN | Crypto | No | but price is wierd, seems shutdown? last and volume (in quote currency) from ticker api
 Coincap | OK | ALTCAP & ALTCAP.X | No | use provided market cap, no volume
 Coinmarketcap | OK | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). TODO: Migrate to v2 before 30 November 2018
 Currencylayer | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From various source (https://currencylayer.com/faq)
