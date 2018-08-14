@@ -116,7 +116,6 @@ Coincap | OK | ALTCAP & ALTCAP.X | No | use provided market cap, no volume
 Coinmarketcap | OK | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). TODO: Migrate to v2 before 30 November 2018
 Currencylayer | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From various source (https://currencylayer.com/faq)
 Fixer | OK | FIAT | Yes |  Very similar to CurrencyLayer, ticker from api, daily from European Central Bank, only EUR with free subscription, no volume info.
-Google | OK | FIAT, Stocks | No | 4d moving average with 1h scale of "last" price, no volume, 15 minutes delay
 Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) from Bitshares DEX in realtime
 Huobi | KO | Crypto | No | not working anymore, API has changed
 IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 

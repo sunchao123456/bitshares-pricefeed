@@ -29,32 +29,6 @@ exchanges:
     ####################################
     # Fiat Exchange Rates
     ####################################
-    google:
-        klass: Google
-        enable: False
-        quotes:
-            - ARS
-            - TRY
-            - SGD
-            - HKD
-            - NZD
-            - CNY
-            - MXN
-            - CAD
-            - CHF
-            - AUD
-            - GBP
-            - JPY
-            - EUR
-            - USD
-            - KRW
-            - RUB
-        bases:
-            - USD
-            - EUR
-            - CNY
-        aliases:
-            RUB: RUBLE
     fixer:
         klass: Fixer
         enable: True

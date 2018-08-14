@@ -9,7 +9,6 @@ from .coincap import Coincap
 from .coinmarketcap import Coinmarketcap
 from .currencylayer import CurrencyLayer
 from .fixer import Fixer
-from .google import Google
 from .graphene import Graphene
 from .huobi import Huobi
 from .okcoin import Okcoin
