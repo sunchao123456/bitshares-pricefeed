@@ -282,7 +282,7 @@ class Feed(object):
                             symbol,
                             target_symbol,
                             float(self.data[interasset][target_symbol][idx]["price"] * ratio["price"]),
-                            float(self.data[interasset][target_symbol][idx]["volume"] * ratio["price"]),
+                            float(self.data[interasset][target_symbol][idx]["volume"]),
                             sources=[
                                 self.data[interasset][target_symbol][idx]["sources"],
                                 ratio["sources"]
@@ -323,7 +323,7 @@ class Feed(object):
                                     symbol,
                                     target_symbol,
                                     float(self.data[interassetA][target_symbol][idx]["price"] * ratioA["price"] * ratioB["price"]),
-                                    float(self.data[interassetA][target_symbol][idx]["volume"] * ratioA["price"] * ratioB["price"]),
+                                    float(self.data[interassetA][target_symbol][idx]["volume"]),
                                     sources=[
                                         self.data[interassetA][target_symbol][idx]["sources"],
                                         ratioA["sources"],
@@ -358,6 +358,7 @@ class Feed(object):
         self.appendOriginalPrices(symbol)
         self.derive2Markets(asset, backing_symbol)
         self.derive3Markets(asset, backing_symbol)
+        log.info("Computed data: \n{}".format(self.data))
 
         if alias not in self.data:
             log.warn("'{}' not in self.data".format(alias))
