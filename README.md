@@ -103,10 +103,13 @@ The following data sources are currently available:
 Name | Status | Assets type | API Key | Description
  --- | ---    | ---         | ---     |   ---
  AEX |  OK    |   Crypto    | No      | last and volume (in quote currency) from CEX ticker api with 15 sec delay 
+AlphaVantage | OK | FIAT, Stocks, BTC | Yes | last from unknown source for currencies and from iex for stocks. volume only for stocks (in nb of shares).
 Big.One | KO | Crypto | Yes | not implemented
+Binance | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
 BitcoinAverage | KO | Crypto | No | used API is deprecated not maintained anymore, need to be upgraded to ApiV2
 Bitcoin Indonesia | KO | Crypto | No | not working anymore, API has changed
 Bitcoin Venezuela | OK | Crypto | No | ticker from api with 15 minutes delay, no volume
+BitsharesFeed | OK | Crypto (MPA) | No | current feed price in Bitshares DEX, no volume.
 Bitstamp | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
 Bittrex | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
 ChBTC | WARN | Crypto | No | but price is wierd, seems shutdown? last and volume (in quote currency) from ticker api
@@ -117,17 +120,15 @@ Fixer | OK | FIAT | Yes |  Very similar to CurrencyLayer, ticker from api, daily
 Google | OK | FIAT, Stocks | No | 4d moving average with 1h scale of "last" price, no volume, 15 minutes delay
 Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) from Bitshares DEX in realtime
 Huobi | KO | Crypto | No | not working anymore, API has changed
+IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 
 LBank | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 OkCoin  | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 OpenExchangeRates | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From unknown sources except Bitcoin wich is from CoinDesk (https://openexchangerates.org/faq#sources)
 Poloniex | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 Quantl | OK | Commodities | Yes | daily price from London Bullion Market Association (LBMA), no volume
-ZB | OK | Crypto | No |last and volume (in quote currency) from CEX API in realtime
-AlphaVantage | OK | FIAT, Stocks, BTC | Yes | last from unknown source for currencies and from iex for stocks. volume only for stocks (in nb of shares).
-IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 
 RobinHood | OK | Stocks | No | last, no volume, from unknown source in real time
 WorldCoinIndex | OK | Crypto | Yes| volume weighted price, sum of market volume.
-BitsharesFeed | OK | Crypto (MPA) | No | current feed price in Bitshares DEX, no volume.
+ZB | OK | Crypto | No |last and volume (in quote currency) from CEX API in realtime
 
 
 ## Development
