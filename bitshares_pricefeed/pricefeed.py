@@ -147,7 +147,7 @@ class Feed(object):
             threads[name] = pool.submit(instance.fetch)
 
         for name in threads:
-            log.info("Checking name ...")
+            log.info("Checking %s ...", name)
             self.feed[name] = threads[name].result()
 
     def assethasconf(self, symbol, parameter):
@@ -303,11 +303,9 @@ class Feed(object):
         if self.assetconf(symbol, "derive_across_3markets"):
             for interassetA in self.config["intermediate_assets"]:
                 for interassetB in self.config["intermediate_assets"]:
-                    if interassetB == symbol:
+                    if interassetB == symbol or interassetA == symbol or interassetA == interassetB:
                         continue
-                    if interassetA == symbol:
-                        continue
-                    if interassetA == interassetB:
+                    if interassetA not in self.data[interassetB] or interassetB not in self.data[symbol]:
                         continue
 
                     for ratioA in self.data[interassetB][interassetA]:
@@ -320,6 +318,7 @@ class Feed(object):
                             for idx in range(0, len(self.data[interassetA][target_symbol])):
                                 if self.data[interassetA][target_symbol][idx]["volume"] == 0:
                                     continue
+                                log.info("derive_across_3markets - found %s -> %s -> %s -> %s", symbol, interassetB, interassetA, target_symbol)
                                 self.addPrice(
                                     symbol,
                                     target_symbol,
