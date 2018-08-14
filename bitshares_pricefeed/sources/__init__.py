@@ -26,3 +26,4 @@ from .worldcoinindex import WorldCoinIndex
 from .coindesk import Coindesk
 from .bitsharesfeed import BitsharesFeed
 from .manual import Manual
+from .huobi import Huobi
