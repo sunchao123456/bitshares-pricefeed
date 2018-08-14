@@ -17,17 +17,10 @@ class CurrencyLayer(FeedSource):  # Hourly updated data over http with free subs
                 response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
                 result = response.json()
                 if result.get("source") == base:
-                    feed[base] = {}
                     for quote in self.quotes:
                         if quote == base:
                             continue
-                        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-                            quoteNew = self.quoteNames[quote]
-                        else:
-                            quoteNew = quote
-                        feed[base][quoteNew] = {
-                            "price": 1 / result["quotes"][base + quote],
-                            "volume": 1.0}
+                        self.add_rate(feed, base, quote, 1 / result["quotes"][base + quote], 1.0)
                 else:
                     raise Exception(result.get("description"))
         except Exception as e:

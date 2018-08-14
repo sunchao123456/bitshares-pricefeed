@@ -53,7 +53,7 @@ exchanges:
             - USD
             - EUR
             - CNY
-        quoteNames:
+        aliases:
             RUB: RUBLE
     fixer:
         klass: Fixer
@@ -83,7 +83,7 @@ exchanges:
             - CNY
             - JPY
             - HKD
-        quoteNames:
+        aliases:
             RUB: RUBLE
     openexchangerates:
         klass: OpenExchangeRates
@@ -137,7 +137,7 @@ exchanges:
         bases:
             # Only USD with free subscription
             - USD
-        quoteNames:
+        aliases:
             RUB: RUBLE
 
     ####################################

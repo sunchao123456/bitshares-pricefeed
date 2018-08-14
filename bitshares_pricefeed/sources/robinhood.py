@@ -6,11 +6,6 @@ class RobinHood(FeedSource): # Stocks prices from RobinHood: https://github.com/
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def _adjustQuoteName(self, quote):
-        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-            return self.quoteNames[quote]
-        return quote
-
     def _extract_symbols(self):
         symbols_by_base = {}
         for equity in self.equities:
@@ -30,12 +25,8 @@ class RobinHood(FeedSource): # Stocks prices from RobinHood: https://github.com/
                     symbols=','.join(symbols_by_base[base])
                 ), headers=_request_headers, timeout=self.timeout)
                 result = response.json()['results']
-                feed[base] = {}
                 for ticker in result:
-                    feed[base][self._adjustQuoteName(ticker['symbol'])] = { 
-                        "price": float(ticker["last_trade_price"]),
-                        "volume": 1.0
-                    }
+                    self.add_rate(feed, base, ticker['symbol'], float(ticker["last_trade_price"]), 1.0)
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

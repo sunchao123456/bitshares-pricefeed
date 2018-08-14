@@ -7,17 +7,11 @@ class Binance(FeedSource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def _adjustQuoteName(self, quote):
-        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-            return self.quoteNames[quote]
-        return quote
-
     def _fetch(self):
         feed = {}
         try:
             url = "https://www.binance.com/api/v1/ticker/24hr?symbol={quote}{base}"
             for base in self.bases:
-                feed[base] = {}
                 for quote in self.quotes:
                     if quote == base:
                         continue
@@ -28,10 +22,7 @@ class Binance(FeedSource):
                     result = response.json()
                     if 'msg' in result and result['msg'] == 'Invalid symbol.':
                         continue
-                    feed[base][self._adjustQuoteName(quote)] = { 
-                        "price": (float(result["lastPrice"])),
-                        "volume": (float(result["volume"])* self.scaleVolumeBy)
-                    }
+                    self.add_rate(feed, base, quote, float(result["lastPrice"]), float(result["volume"]))
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

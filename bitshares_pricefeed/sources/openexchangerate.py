@@ -19,14 +19,10 @@ class OpenExchangeRates(FeedSource):  # Hourly updated data with free subscripti
                 result = response.json()
                 if result.get("base") != base:
                     raise Exception("Error fetching from url. Returned: {}".format(result))
-                feed[base] = {}
                 for quote in self.quotes:
                     if quote == base:
                         continue
-                    if hasattr(self, "quoteNames") and quote in self.quoteNames:
-                        quote = self.quoteNames[quote]
-                    feed[base][quote] = {"price": 1 / result["rates"][quote],
-                                            "volume": 1.0}
+                    self.add_rate(feed, base, quote,  1 / result["rates"][quote], 1.0)
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

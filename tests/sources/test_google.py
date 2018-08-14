@@ -6,7 +6,7 @@ def test_google_forex_fetch(checkers):
     checkers.check_feed(feed, ['EUR:USD', 'CNY:USD', 'EUR:CNY', 'USD:CNY'], noVolume=True)
 
 def test_google_equities_fetch(checkers):
-    source = Google(equities=['F:USD', 'BABA:USD'], quoteNames={'F':'FORDCOM', 'BABA':'ALIBABACOM'}) 
+    source = Google(equities=['F:USD', 'BABA:USD'], aliases={'F':'FORDCOM', 'BABA':'ALIBABACOM'}) 
     feed = source.fetch()
     checkers.check_feed(feed, ['FORDCOM:USD', 'ALIBABACOM:USD'], noVolume=True)
 

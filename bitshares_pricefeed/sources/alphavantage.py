@@ -8,16 +8,8 @@ class AlphaVantage(FeedSource):  # Alpha Vantage
         if not hasattr(self, "api_key"):
             raise Exception("AlphaVantage FeedSource requires an 'api_key'.")
 
-
-    def _adjustQuoteName(self, quote):
-        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-            quote = self.quoteNames[quote]
-        return quote
-
     def _fetchForex(self, feed):
         for base in self.bases:
-            if not base in feed:
-                feed[base] = {}
             for quote in self.quotes:
                 if quote == base:
                     continue
@@ -29,7 +21,7 @@ class AlphaVantage(FeedSource):  # Alpha Vantage
                 response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
                 result = response.json()
                 price = float(result['Realtime Currency Exchange Rate']['5. Exchange Rate'])
-                feed[base][self._adjustQuoteName(quote)] = {"price": price, "volume": 1.0}
+                self.add_rate(feed, base, quote, price, 1.0)
         return feed
 
 
@@ -49,15 +41,11 @@ class AlphaVantage(FeedSource):  # Alpha Vantage
 
         for equity in self.equities:
             (name, base) = equity.split(':')
-            if not base in feed:
-                feed[base] = {}
             for ticker in result['Stock Quotes']:
                 if ticker['1. symbol'] == name:
-                    volume = 1.0
-                    if ticker['3. volume'] != '--':
-                        volume = float(ticker['3. volume']) * self.scaleVolumeBy
-                    feed[base][self._adjustQuoteName(name)] = { "price": float(ticker['2. price']),
-                                                                "volume": volume }
+                    price = float(ticker['2. price'])
+                    volume = float(ticker['3. volume']) if ticker['3. volume'] != '--' else 1.0
+                    self.add_rate(feed, base, name, price, volume)
         return feed
 
 

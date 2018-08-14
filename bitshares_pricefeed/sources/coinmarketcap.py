@@ -13,22 +13,15 @@ class Coinmarketcap(FeedSource):
             response = requests.get(
                 url=url, headers=_request_headers, timeout=self.timeout)
             result = response.json()
-            feed["BTC"] = {}
-            feed["USD"] = {}
             for asset in result:
                 for quote in self.quotes:
                     if asset["symbol"] == quote:
-                        feed["BTC"][quote] = {
-                            "price": (float(asset["price_btc"])),
-                            "volume": (float(
-                                asset["24h_volume_usd"]) /
-                                float(asset["price_btc"]) *
-                                self.scaleVolumeBy)}
-                        feed["USD"][quote] = {
-                            "price": (float(asset["price_usd"])),
-                            "volume": (
-                                float(asset["24h_volume_usd"]) *
-                                self.scaleVolumeBy)}
+                        
+                        self.add_rate(feed, 'BTC', quote, 
+                            float(asset["price_btc"]), 
+                            float(asset["24h_volume_usd"]) / float(asset["price_btc"]))
+
+                        self.add_rate(feed, 'USD', quote, float(asset["price_usd"]), float(asset["24h_volume_usd"]))
 
         except Exception as e:
             raise Exception(
@@ -65,11 +58,9 @@ class Coinmarketcap(FeedSource):
                 btc_altcapx_price = float(alt_cap_x) / float(btc_cap)
 
                 if 'ALTCAP' in self.quotes:
-                    feed['BTC']['ALTCAP'] = {"price": btc_altcap_price,
-                                            "volume": 1.0}
+                    self.add_rate(feed, 'BTC', 'ALTCAP', btc_altcap_price, 1.0)
                 if 'ALTCAP.X' in self.quotes:
-                    feed['BTC']['ALTCAP.X'] = {"price": btc_altcapx_price,
-                                              "volume": 1.0}
+                    self.add_rate(feed, 'BTC', 'ALTCAP.X', btc_altcapx_price, 1.0)
             except Exception as e:
                 raise Exception(
                     "\nError fetching results from {1}! ({0})".format(

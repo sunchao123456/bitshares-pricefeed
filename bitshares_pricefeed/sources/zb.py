@@ -11,7 +11,6 @@ class Zb(FeedSource):
         url = "http://api.zb.com/data/v1/ticker?market={quote}_{base}"
         try:
             for base in self.bases:
-                feed[base] = {}
                 for quote in self.quotes:
                     if base == quote:
                         continue
@@ -23,10 +22,7 @@ class Zb(FeedSource):
                     if "ticker" in result and \
                        "last" in result["ticker"] and \
                        "vol" in result["ticker"]:
-                        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-                            quote = self.quoteNames[quote]
-                        feed[base][quote] = {"price": (float(result["ticker"]["last"])),
-                                             "volume": (float(result["ticker"]["vol"]) * self.scaleVolumeBy)}
+                        self.add_rate(feed, base, quote, float(result["ticker"]["last"]), float(result["ticker"]["vol"]))
                     else:
                         print("\nFetched data from {0} is empty!".format(type(self).__name__))
                         continue

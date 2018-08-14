@@ -10,16 +10,12 @@ class Graphene(FeedSource):
         feed = {}
         try:
             for base in self.bases:
-                feed[base] = {}
                 for quote in self.quotes:
                     if quote == base:
                         continue
                     ticker = Market("%s:%s" % (quote, base)).ticker()
-                    if hasattr(self, "quoteNames") and quote in self.quoteNames:
-                        quote = self.quoteNames[quote]
                     if (float(ticker["latest"])) > 0 and float(ticker["quoteVolume"]) > 0:
-                        feed[base][quote] = {"price": (float(ticker["latest"])),
-                                             "volume": (float(ticker["quoteVolume"]) * self.scaleVolumeBy)}
+                        self.add_rate(feed, base, quote, float(ticker["latest"]), float(ticker["quoteVolume"]))
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

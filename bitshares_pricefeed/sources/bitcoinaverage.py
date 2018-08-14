@@ -13,21 +13,13 @@ class BitcoinAverage(FeedSource):
         feed = {}
         try:
             for base in self.bases:
-                feed[base] = {}
                 for quote in self.quotes:
                     if quote == base:
                         continue
                     result = self.rest.ticker_global_per_symbol(
                         quote.upper() + base.upper()
                     )
-                    if (
-                        hasattr(self, "quoteNames") and
-                        quote in self.quoteNames
-                    ):
-                        quote = self.quoteNames[quote]
-                    feed[base][quote] = {
-                        "price": (float(result["last"])),
-                        "volume": (float(result["volume"]))}
+                    self.add_rate(feed, base, quote, float(result["last"]), float(result["volume"]))
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

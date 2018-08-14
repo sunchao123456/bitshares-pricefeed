@@ -18,14 +18,10 @@ class Quandl(FeedSource):  # Quandl using Python API client
         try:
             for market in self.datasets:
                 quote, base = market.split(":")
-                if base not in feed:
-                    feed[base] = {}
-
                 prices = []
                 for dataset in self.datasets[market]:
                     data = quandl.get(dataset, rows=1, returns='numpy')
-                feed[base][quote] = {"price": data[0][1],
-                                     "volume": 1.0}
+                self.add_rate(feed, base, quote, data[0][1], 1.0)
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed
@@ -42,9 +38,6 @@ class QuandlPlain(FeedSource):  # Quandl direct HTTP
         try:
             for market in self.datasets:
                 quote, base = market.split(":")
-                if base not in feed:
-                    feed[base] = {}
-
                 prices = []
                 for dataset in self.datasets[market]:
                     url = "https://www.quandl.com/api/v3/datasets/{dataset}.json?start_date={date}".format(
@@ -64,8 +57,7 @@ class QuandlPlain(FeedSource):  # Quandl direct HTTP
                     d = data["dataset"]
                     if len(d["data"]):
                         prices.append(d["data"][0][1])
-                feed[base][quote] = {"price": sum(prices) / len(prices),
-                                     "volume": 1.0}
+                self.add_rate(feed, base, quote, sum(prices) / len(prices), 1.0)
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

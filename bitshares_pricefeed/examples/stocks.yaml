@@ -27,7 +27,7 @@ exchanges:
             - BIDU:USD
             - FB:USD
             - AMZN:USD
-        quoteNames:
+        aliases:
             F: FORDCOM
             BABA: ALIBABACOM
             V: VISACOM

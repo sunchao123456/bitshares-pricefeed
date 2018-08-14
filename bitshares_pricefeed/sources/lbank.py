@@ -11,7 +11,6 @@ class Lbank(FeedSource):
         try:
             url = "https://api.lbank.info/v1/ticker.do?symbol={quote}_{base}"
             for base in self.bases:
-                feed[base] = {}
                 for quote in self.quotes:
                     if quote == base:
                         continue
@@ -26,11 +25,7 @@ class Lbank(FeedSource):
                         raise Exception('Error %s from LBank (see https://www.lbank.info/documents.html#/rest/api-reference).' 
                                         % result['error_code'])
                     ticker = result['ticker']
-                    if hasattr(self, "quoteNames") and quote in self.quoteNames:
-                        quote = self.quoteNames[quote]
-                    feed[base][quote] = {
-                        "price": (float(ticker["latest"])),
-                        "volume": (float(ticker["vol"]) * self.scaleVolumeBy)}
+                    self.add_rate(feed, base, quote, float(ticker["latest"]), float(ticker["vol"]))
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

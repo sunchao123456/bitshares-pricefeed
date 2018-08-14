@@ -13,7 +13,6 @@ class Coincap(FeedSource):
         feed = {}
         base = self.bases[0]
         if base == 'BTC':
-            feed[base] = {}
             try:
                 coincap_front = requests.get('http://www.coincap.io/front').json()
                 coincap_global = requests.get('http://www.coincap.io/global').json()
@@ -28,11 +27,9 @@ class Coincap(FeedSource):
                 btc_altcapx_price = alt_cap_x / btc_cap
 
                 if 'ALTCAP' in self.quotes:
-                    feed[base]['ALTCAP'] = {"price": btc_altcap_price,
-                                            "volume": 1.0}
+                    self.add_rate(feed, base, 'ALTCAP', btc_altcap_price, 1.0)
                 if 'ALTCAP.X' in self.quotes:
-                    feed[base]['ALTCAP.X'] = {"price": btc_altcapx_price,
-                                              "volume": 1.0}
+                    self.add_rate(feed, base, 'ALTCAP.X', btc_altcapx_price, 1.0)
             except Exception as e:
                 raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

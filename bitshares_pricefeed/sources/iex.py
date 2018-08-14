@@ -6,11 +6,6 @@ class Iex(FeedSource): # Stocks prices from iextrading.com
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def _adjustQuoteName(self, quote):
-        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-            return self.quoteNames[quote]
-        return quote
-
     def _extract_symbols(self):
         symbols_by_base = {}
         for equity in self.equities:
@@ -30,13 +25,9 @@ class Iex(FeedSource): # Stocks prices from iextrading.com
                     symbols=','.join(symbols_by_base[base])
                 ), headers=_request_headers, timeout=self.timeout)
                 result = response.json()
-                feed[base] = {}
                 for symbol in result.keys():
                     ticker = result[symbol]['quote']
-                    feed[base][self._adjustQuoteName(symbol)] = { 
-                        "price": (float(ticker["latestPrice"])),
-                        "volume": (float(ticker["latestVolume"])* self.scaleVolumeBy)
-                    }
+                    self.add_rate(feed, base, symbol, float(ticker["latestPrice"]), float(ticker["latestVolume"]))
         except Exception as e:
             raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
         return feed

@@ -11,11 +11,6 @@ class Google(FeedSource):  # Google Finance
         self.period = 60 * 60  # 1h
         self.days = 4
 
-    def _adjustQuoteName(self, quote):
-        if hasattr(self, "quoteNames") and quote in self.quoteNames:
-            return self.quoteNames[quote]
-        return quote
-
     def _fetch_one(self, ticker):
         url = (
             'http://www.google.com/finance/getprices'
@@ -24,7 +19,7 @@ class Google(FeedSource):  # Google Finance
 
         response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
         reader = csv.reader(codecs.iterdecode(response.content.splitlines(), "utf-8"))
-
+    
         prices = []
         for row in reader:
             if re.match('^[a\d]', row[0]):
@@ -35,23 +30,21 @@ class Google(FeedSource):  # Google Finance
 
     def _fetchForex(self, feed):
         for base in self.bases:
-            feed[base] = {}
-
             for quote in self.quotes:
                 if quote == base:
                     continue
 
                 ticker = "%s%s" % (quote, base)
-                feed[base][self._adjustQuoteName(quote)] = self._fetch_one(ticker)
+                res = self._fetch_one(ticker)
+                self.add_rate(feed, base, quote, res['price'], res['volume'])
         return feed
 
     def _fetchEquities(self, feed):
         if hasattr(self, "equities"):
             for equity in self.equities:
                     (quote, base) = equity.split(':')
-                    if not base in feed:
-                        feed[base] = {}
-                    feed[base][self._adjustQuoteName(quote)] = self._fetch_one(quote)
+                    res = self._fetch_one(quote)
+                    self.add_rate(feed, base, quote, res['price'], res['volume'])
         return feed
 
     def _fetch(self):
