@@ -2,9 +2,6 @@ import requests
 from . import FeedSource, _request_headers
 
 class BitcoinVenezuela(FeedSource):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _fetch(self):
         feed = {}
         try:

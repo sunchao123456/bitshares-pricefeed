@@ -3,9 +3,6 @@ from . import FeedSource, _request_headers
 
 
 class Poloniex(FeedSource):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _fetch(self):
         feed = {}
         try:

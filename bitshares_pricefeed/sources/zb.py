@@ -3,9 +3,6 @@ from . import FeedSource, _request_headers
 
 
 class Zb(FeedSource):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _fetch(self):
         feed = {}
         url = "http://api.zb.com/data/v1/ticker?market={quote}_{base}"

@@ -2,9 +2,6 @@ import requests
 from . import FeedSource, _request_headers
 
 class Iex(FeedSource): # Stocks prices from iextrading.com
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _extract_symbols(self):
         symbols_by_base = {}
         for equity in self.equities:

@@ -2,9 +2,6 @@ import requests
 from . import FeedSource, _request_headers
 
 class RobinHood(FeedSource): # Stocks prices from RobinHood: https://github.com/sanko/Robinhood
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _extract_symbols(self):
         symbols_by_base = {}
         for equity in self.equities:
