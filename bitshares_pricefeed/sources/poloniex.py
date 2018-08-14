@@ -1,5 +1,3 @@
-import csv
-import json
 import requests
 from . import FeedSource, _request_headers
 
