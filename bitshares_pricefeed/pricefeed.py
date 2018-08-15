@@ -246,7 +246,7 @@ class Feed(object):
                         quote,
                         self.feed[datasource][base][quote]["price"],
                         self.feed[datasource][base][quote]["volume"],
-                        sources=[datasource]
+                        sources=['{} - {}:{}'.format(datasource, base, quote)]
                     )
 
                     if self.feed[datasource][base][quote]["price"] > 0 and \
@@ -257,7 +257,7 @@ class Feed(object):
                             base,
                             float(1.0 / self.feed[datasource][base][quote]["price"]),
                             float(self.feed[datasource][base][quote]["volume"] * self.feed[datasource][base][quote]["price"]),
-                            sources=[datasource]
+                            sources=['{} - {}:{}'.format(datasource, quote, base)]
                         )
 
     def derive2Markets(self, asset, target_symbol):
@@ -284,8 +284,8 @@ class Feed(object):
                             float(self.data[interasset][target_symbol][idx]["price"] * ratio["price"]),
                             float(self.data[interasset][target_symbol][idx]["volume"]),
                             sources=[
-                                self.data[interasset][target_symbol][idx]["sources"],
-                                ratio["sources"]
+                                ratio["sources"],
+                                self.data[interasset][target_symbol][idx]["sources"]
                             ]
                         )
 
@@ -325,9 +325,9 @@ class Feed(object):
                                     float(self.data[interassetA][target_symbol][idx]["price"] * ratioA["price"] * ratioB["price"]),
                                     float(self.data[interassetA][target_symbol][idx]["volume"]),
                                     sources=[
-                                        self.data[interassetA][target_symbol][idx]["sources"],
+                                        ratioB["sources"],
                                         ratioA["sources"],
-                                        ratioB["sources"]
+                                        self.data[interassetA][target_symbol][idx]["sources"]
                                     ]
                                 )
 
@@ -356,9 +356,10 @@ class Feed(object):
 
         # Fill in self.data
         self.appendOriginalPrices(symbol)
+        log.info("Computed data (raw): \n{}".format(self.data))
         self.derive2Markets(asset, backing_symbol)
         self.derive3Markets(asset, backing_symbol)
-        log.info("Computed data: \n{}".format(self.data))
+        log.info("Computed data (after derivation): \n{}".format(self.data))
 
         if alias not in self.data:
             log.warn("'{}' not in self.data".format(alias))
