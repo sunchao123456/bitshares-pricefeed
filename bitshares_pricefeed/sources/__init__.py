@@ -13,7 +13,7 @@ from .graphene import Graphene
 from .huobi import Huobi
 from .okcoin import Okcoin
 from .openexchangerate import OpenExchangeRates
-from .poloniex import Poloniex
+from .poloniex import Poloniex, PoloniexVWAP
 from .quandl import Quandl
 from .bitstamp import Bitstamp
 from .aex import Aex
