@@ -1,7 +1,6 @@
 import statistics
 import numpy as num
 import time
-from pprint import pprint
 from math import *
 from bitshares.account import Account
 from bitshares.asset import Asset

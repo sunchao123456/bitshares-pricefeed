@@ -10,17 +10,14 @@ class Fixer(FeedSource):  # fixer.io daily updated data from European Central Ba
 
     def _fetch(self):
         feed = {}
-        try:
-            for base in self.bases:
-                if self.free_subscription and base != 'EUR':
+        for base in self.bases:
+            if self.free_subscription and base != 'EUR':
+                continue
+            url = "http://data.fixer.io/api/latest?access_key=%s&base=%s" % (self.api_key, base)
+            response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
+            result = response.json()
+            for quote in self.quotes:
+                if quote == base:
                     continue
-                url = "http://data.fixer.io/api/latest?access_key=%s&base=%s" % (self.api_key, base)
-                response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
-                result = response.json()
-                for quote in self.quotes:
-                    if quote == base:
-                        continue
-                    self.add_rate(feed, base, quote, 1.0 / float(result["rates"][quote]), 1.0)
-        except Exception as e:
-            raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
+                self.add_rate(feed, base, quote, 1.0 / float(result["rates"][quote]), 1.0)
         return feed

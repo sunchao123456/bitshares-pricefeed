@@ -11,15 +11,12 @@ class BitcoinAverage(FeedSource):
 
     def _fetch(self):
         feed = {}
-        try:
-            for base in self.bases:
-                for quote in self.quotes:
-                    if quote == base:
-                        continue
-                    result = self.rest.ticker_global_per_symbol(
-                        quote.upper() + base.upper()
-                    )
-                    self.add_rate(feed, base, quote, float(result["last"]), float(result["volume"]))
-        except Exception as e:
-            raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
+        for base in self.bases:
+            for quote in self.quotes:
+                if quote == base:
+                    continue
+                result = self.rest.ticker_global_per_symbol(
+                    quote.upper() + base.upper()
+                )
+                self.add_rate(feed, base, quote, float(result["last"]), float(result["volume"]))
         return feed

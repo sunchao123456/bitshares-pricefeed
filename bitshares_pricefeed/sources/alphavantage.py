@@ -37,7 +37,6 @@ class AlphaVantage(FeedSource):  # Alpha Vantage
 
         response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
         result = response.json()
-        print(result)
 
         for equity in self.equities:
             (name, base) = equity.split(':')

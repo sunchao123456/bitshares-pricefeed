@@ -10,19 +10,16 @@ class OpenExchangeRates(FeedSource):  # Hourly updated data with free subscripti
 
     def _fetch(self):
         feed = {}
-        try:
-            for base in self.bases:
-                url = "https://openexchangerates.org/api/latest.json?app_id=%s&base=%s" % (self.api_key, base)
-                if self.free_subscription and base != 'USD':
+        for base in self.bases:
+            url = "https://openexchangerates.org/api/latest.json?app_id=%s&base=%s" % (self.api_key, base)
+            if self.free_subscription and base != 'USD':
+                continue
+            response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
+            result = response.json()
+            if result.get("base") != base:
+                raise Exception("Error fetching from url. Returned: {}".format(result))
+            for quote in self.quotes:
+                if quote == base:
                     continue
-                response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
-                result = response.json()
-                if result.get("base") != base:
-                    raise Exception("Error fetching from url. Returned: {}".format(result))
-                for quote in self.quotes:
-                    if quote == base:
-                        continue
-                    self.add_rate(feed, base, quote,  1 / result["rates"][quote], 1.0)
-        except Exception as e:
-            raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
+                self.add_rate(feed, base, quote,  1 / result["rates"][quote], 1.0)
         return feed

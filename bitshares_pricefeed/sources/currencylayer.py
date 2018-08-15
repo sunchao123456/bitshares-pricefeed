@@ -9,20 +9,17 @@ class CurrencyLayer(FeedSource):  # Hourly updated data over http with free subs
 
     def _fetch(self):
         feed = {}
-        try:
-            for base in self.bases:
-                url = "http://apilayer.net/api/live?access_key=%s&currencies=%s&source=%s&format=1" % (self.api_key, ",".join(self.quotes), base)
-                if self.free_subscription and base != 'USD':
-                    continue
-                response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
-                result = response.json()
-                if result.get("source") == base:
-                    for quote in self.quotes:
-                        if quote == base:
-                            continue
-                        self.add_rate(feed, base, quote, 1 / result["quotes"][base + quote], 1.0)
-                else:
-                    raise Exception(result.get("description"))
-        except Exception as e:
-            raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
+        for base in self.bases:
+            url = "http://apilayer.net/api/live?access_key=%s&currencies=%s&source=%s&format=1" % (self.api_key, ",".join(self.quotes), base)
+            if self.free_subscription and base != 'USD':
+                continue
+            response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
+            result = response.json()
+            if result.get("source") == base:
+                for quote in self.quotes:
+                    if quote == base:
+                        continue
+                    self.add_rate(feed, base, quote, 1 / result["quotes"][base + quote], 1.0)
+            else:
+                raise Exception(result.get("description"))
         return feed

@@ -14,15 +14,12 @@ class RobinHood(FeedSource): # Stocks prices from RobinHood: https://github.com/
     def _fetch(self):
         symbols_by_base = self._extract_symbols()
         feed = {}
-        try:
-            url = "https://api.robinhood.com/quotes/?symbols={symbols}"
-            for base in symbols_by_base.keys():
-                response = requests.get(url=url.format(
-                    symbols=','.join(symbols_by_base[base])
-                ), headers=_request_headers, timeout=self.timeout)
-                result = response.json()['results']
-                for ticker in result:
-                    self.add_rate(feed, base, ticker['symbol'], float(ticker["last_trade_price"]), 1.0)
-        except Exception as e:
-            raise Exception("\nError fetching results from {1}! ({0})".format(str(e), type(self).__name__))
+        url = "https://api.robinhood.com/quotes/?symbols={symbols}"
+        for base in symbols_by_base.keys():
+            response = requests.get(url=url.format(
+                symbols=','.join(symbols_by_base[base])
+            ), headers=_request_headers, timeout=self.timeout)
+            result = response.json()['results']
+            for ticker in result:
+                self.add_rate(feed, base, ticker['symbol'], float(ticker["last_trade_price"]), 1.0)
         return feed
