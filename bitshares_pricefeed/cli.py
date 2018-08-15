@@ -33,6 +33,12 @@ log = logging.getLogger(__name__)
     # type=click.File('r'),
 )
 @click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Only compute prices and print result, no publication.",
+    default=False,
+)
+@click.option(
     "--confirm-warning/--no-confirm-warning",
     help="Need for manual confirmation of warnings",
     default=True,
@@ -52,6 +58,8 @@ def main(ctx, **kwargs):
     ctx.obj = {}
     for k, v in kwargs.items():
         ctx.obj[k] = v
+    if ctx.obj['dry_run']:
+        ctx.obj['unsigned'] = True
 
 
 @main.command()
@@ -146,6 +154,9 @@ def update(ctx, assets):
     prices = feed.get_prices()
     print_log(prices)
     print_prices(prices)
+
+    if ctx.obj['dry_run']:
+        return
 
     for symbol, price in prices.items():
         # Skip empy symbols

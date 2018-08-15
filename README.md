@@ -83,6 +83,8 @@ Usage: bitshares-pricefeed [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --configfile TEXT
+  --dry-run                       Only compute prices and print result, no
+                                  publication.
   --confirm-warning / --no-confirm-warning
                                   Need for manual confirmation of warnings
   --skip-critical / --no-skip-critical
