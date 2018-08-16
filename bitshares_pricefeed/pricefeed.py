@@ -7,7 +7,6 @@ from bitshares.asset import Asset
 from bitshares.price import Price
 from bitshares.amount import Amount
 from bitshares.market import Market
-from concurrent import futures
 from datetime import datetime, date, timedelta
 from . import sources
 import logging
@@ -130,24 +129,9 @@ class Feed(object):
     def fetch(self):
         """ Fetch the prices from external exchanges
         """
-        pool = futures.ThreadPoolExecutor(max_workers=8)
-
-        threads = {}
         if "exchanges" not in self.config or not self.config["exchanges"]:
             return
-
-        for name, exchange in self.config["exchanges"].items():
-            if "enable" in exchange and not exchange["enable"]:
-                continue
-            if not hasattr(sources, exchange["klass"]):
-                raise ValueError("Klass %s not known!" % exchange["klass"])
-            klass = getattr(sources, exchange["klass"])
-            instance = klass(**exchange)
-            threads[name] = pool.submit(instance.fetch)
-
-        for name in threads:
-            log.info("Checking %s ...", name)
-            self.feed[name] = threads[name].result()
+        self.feed.update(sources.fetch_all(self.config["exchanges"]))
 
     def assethasconf(self, symbol, parameter):
         """ Do we have symbol specific parameters?
@@ -211,6 +195,9 @@ class Feed(object):
             sources=flat_list
         ))
 
+    def get_source_description(self, datasource, base, quote, data):
+        return '{} - {}:{}'.format(data['source'] if 'source' in data else datasource, base, quote)
+
     def appendOriginalPrices(self, symbol):
         """ Load feed data into price/volume array for processing
             This few lines solely take the data of the chosen exchanges and put
@@ -223,6 +210,7 @@ class Feed(object):
 
         for datasource in self.get_sources(symbol):
             if not self.config["exchanges"][datasource].get("enable", False):
+                log.info('Skip disabled source {}'.format(datasource))
                 continue
             log.info("appendOriginalPrices({}) from {}".format(symbol, datasource))
             if datasource not in self.feed:
@@ -235,28 +223,29 @@ class Feed(object):
                         continue
                     if not base or not quote:
                         continue
+
+                    feed_data = self.feed[datasource][base][quote]
                     # Skip markets with zero trades in the last 24h
-                    if self.feed[datasource][base][quote]["volume"] == 0.0:
+                    if feed_data["volume"] == 0.0:
                         continue
 
                     # Original price/volume
                     self.addPrice(
                         base,
                         quote,
-                        self.feed[datasource][base][quote]["price"],
-                        self.feed[datasource][base][quote]["volume"],
-                        sources=['{} - {}:{}'.format(datasource, base, quote)]
+                        feed_data["price"],
+                        feed_data["volume"],
+                        sources=[self.get_source_description(datasource, base, quote, feed_data)]
                     )
 
-                    if self.feed[datasource][base][quote]["price"] > 0 and \
-                       self.feed[datasource][base][quote]["volume"] > 0:
+                    if feed_data["price"] > 0 and feed_data["volume"] > 0:
                         # Inverted pair price/volume
                         self.addPrice(
                             quote,
                             base,
-                            float(1.0 / self.feed[datasource][base][quote]["price"]),
-                            float(self.feed[datasource][base][quote]["volume"] * self.feed[datasource][base][quote]["price"]),
-                            sources=['{} - {}:{}'.format(datasource, quote, base)]
+                            float(1.0 / feed_data["price"]),
+                            float(feed_data["volume"] * feed_data["price"]),
+                            sources=[self.get_source_description(datasource, quote, base, feed_data)]
                         )
 
     def derive2Markets(self, asset, target_symbol):

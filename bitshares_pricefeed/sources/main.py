@@ -3,14 +3,38 @@ import json
 import os
 import sys
 import traceback
+from concurrent import futures
+from .. import sources
 
 import requests
 
 from appdirs import user_data_dir
 
+import logging
+log = logging.getLogger(__name__)
+
 _request_headers = {'content-type': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:22.0) Gecko/20100101 Firefox/22.0'}
 
+def fetch_all(exchanges):
+    feed = {}
+    pool = futures.ThreadPoolExecutor(max_workers=8)
+
+    threads = {}
+
+    for name, exchange in exchanges.items():
+        if "enable" in exchange and not exchange["enable"]:
+            continue
+        if not hasattr(sources, exchange["klass"]):
+            raise ValueError("Klass %s not known!" % exchange["klass"])
+        klass = getattr(sources, exchange["klass"])
+        instance = klass(**exchange)
+        threads[name] = pool.submit(instance.fetch)
+
+    for name in threads:
+        log.info("Checking %s ...", name)
+        feed[name] = threads[name].result()
+    return feed
 
 class FeedSource():
     def __init__(self, scaleVolumeBy=1.0,

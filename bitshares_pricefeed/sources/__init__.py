@@ -1,4 +1,4 @@
-from .main import FeedSource, _request_headers
+from .main import FeedSource, _request_headers, fetch_all
 
 # Exchanges
 from .bitcoinaverage import BitcoinAverage
@@ -27,3 +27,4 @@ from .coindesk import Coindesk
 from .bitsharesfeed import BitsharesFeed
 from .manual import Manual
 from .coinegg import CoinEgg
+from .composite import Composite

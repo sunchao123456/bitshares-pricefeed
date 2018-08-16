@@ -1,0 +1,150 @@
+# This is an example configuration file that showcase the use of composite source.
+
+# If true, a new price feed needs manual confirmation
+confirm: True
+
+# The producer name(s)
+producer: $PRODUCER
+
+# Exchange settings (Here, you may need to add API keys)
+exchanges:
+
+  # Select the maximum BTC/USD price from multiple sources.
+  best_btc_price:
+    klass: Composite
+    aggregation_type: 'max'
+    enable: True
+    exchanges:
+      worldcoinindex:
+          klass: WorldCoinIndex
+          enable: True
+          api_key: $WORLDCOININDEX_API_KEY
+          free_subscription: True
+          quotes:
+              - BTC
+          bases:
+              - USD
+      coinmarketcap:
+          klass: Coinmarketcap
+          enable: True
+          quotes:
+              - BTC
+          bases:
+              - USD
+      coindesk:
+          klass: Coindesk
+          enable: True
+          quotes:
+              - BTC
+          bases:
+              - USD
+
+  average_fiat_price:
+    klass: Composite
+    aggregation_type: 'mean'
+    enable: True
+    exchanges:
+      fixer:
+          klass: Fixer
+          enable: True
+          api_key: $FIXER_API_KEY
+          free_subscription: True
+          quotes:
+              - EUR
+              - CNY
+          bases:
+              - USD
+      openexchangerates:
+          klass: OpenExchangeRates
+          enable: True
+          api_key: $OPENEXCHANGERATE_API_KEY
+          free_subscription: True
+          quotes:
+              - EUR
+              - CNY
+          bases:
+              # Only USD with free subscription
+              - USD
+      currencylayer:
+          klass: CurrencyLayer
+          enable: True
+          api_key: $CURRENCYLAYER_API_KEY
+          free_subscription: True
+          quotes:
+              - EUR
+              - CNY
+          bases:
+              # Only USD with free subscription
+              - USD
+
+  huobi:
+      klass: Huobi
+      enable: True
+      quotes:
+          - BTS
+      bases:
+          - BTC
+
+        
+# default settings
+default:
+
+    # Type: extern, formula, alias
+    type: extern
+
+    # max age of a feed
+    maxage: 43200
+
+    # minimum percentage that forces a publish
+    min_change: 0.5
+
+    # warn if price change goes above this percentage
+    warn_change: 1.5
+
+    # skip publishing a feed if price goes above this percentage
+    skip_change: 3
+
+    # how to derive a single price from several sources
+    # Choose from: "median", "mean", or "weighted" (by volume)
+    metric: weighted
+
+    # Select sources for this particular asset. Each source
+    # has its own fetch() method and collects several markets
+    # any market of an exchanges is considered but only the
+    # current asset's price is derived
+    #
+    # Choose from: - "*": all,
+    #              - loaded exchanges (see below)
+    sources:
+        - '*'
+
+    # Core exchange factor for paying transaction fees in
+    # non-BTS assets. Premium of 5%
+    core_exchange_factor: 1.05
+
+    # maintenance collateral ratio (percentage)
+    maintenance_collateral_ratio: 175.0
+
+    # Maximum short squeeze ratio
+    maximum_short_squeeze_ratio: 110.0
+
+    # If set to True, prices are also derived via 3
+    # markets instead of just two:
+    # E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+    derive_across_3markets: True
+
+
+# Enabled assets that are derived if no asset is provided via command
+# line
+assets:
+    USD:
+    CNY:
+        core_exchange_factor: 1.2
+
+# Intermediate assets are useful for 2 and 3 market price derivation
+# E.g.: USD:BTC -> BTC:BTS = USD:BTS
+#       GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+intermediate_assets:
+    - CNY
+    - USD
+    - BTC

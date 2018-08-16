@@ -131,6 +131,43 @@ RobinHood | OK | Stocks | No | last, no volume, from unknown source in real time
 WorldCoinIndex | OK | Crypto | Yes| volume weighted price, sum of market volume.
 ZB | OK | Crypto | No |last and volume (in quote currency) from CEX API in realtime
 
+### Special sources:
+
+#### Manual
+
+A manual source is available to inject some manually set / constand data to the source feed.
+This could be usefull for:
+  -  testing to avoid connection to a third party datasource.
+  -  inject a static rate like BitUSD/USD 
+
+Example:
+```
+exchanges:
+  manual:
+    klass: Manual
+    enable: True
+    feed:
+      USD:
+        BTS:
+          price: 42
+          volume: 1
+```
+
+#### Composite
+
+A composite source could be used to group multiple sources together in order to aggregate them using a specific fomula.
+
+Aggregation types formulas could be:
+  - `min`: select the minimum value for each pairs
+  - `max`: select the maximum value for each pairs
+  - `mean`: compute the mean price of all the pairs and sum the volume.
+  - `weighted_mean`: compute the volume weighted mean price of all the pairs and sum the volume.
+  - `median`: compute the median price of all the pairs and sum the volume.
+  - `first_valid`: select the first pairs where the source match an ordered list of sources.
+
+The main use cases is if you want to retrieve a pair like BTC/USD from multiples sources (worldcoinindex, bitcoinaverage, coinmarketcap), but you want to use only one of the value in all your computations. The same apply for FIAT exchange rates from (fixer, currencylayer, openexchangerate, ...).
+
+See example configuration in `examples/composite.yaml`
 
 ## Development
 
