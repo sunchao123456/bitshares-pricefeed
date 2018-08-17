@@ -118,6 +118,7 @@ Coincap | OK | ALTCAP & ALTCAP.X | No | use provided market cap, no volume
 CoinEgg | OK | Crypto |No | last and volume (in quote currency) from CEX ticker api
 Coinmarketcap | OK | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). TODO: Migrate to v2 before 30 November 2018
 Currencylayer | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From various source (https://currencylayer.com/faq)
+CoinTiger | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
 Fixer | OK | FIAT | Yes |  Very similar to CurrencyLayer, ticker from api, daily from European Central Bank, only EUR with free subscription, no volume info.
 Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) from Bitshares DEX in realtime
 Huobi | OK | Crypto | No | close price and volume (in quote currency) from CEX API in realtime
