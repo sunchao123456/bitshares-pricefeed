@@ -54,7 +54,7 @@ def print_log(feeds):
         "quote",
         "price",
         "diff",
-        "volume",
+        "quote volume",
         "source"
     ])
     t.align = 'l'
