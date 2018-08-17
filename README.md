@@ -124,6 +124,7 @@ Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) 
 Huobi | OK | Crypto | No | close price and volume (in quote currency) from CEX API in realtime
 IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 
 LBank | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
+MagicWallet | OK | BITCNY/CNY | Yes | BITCNY/CNY ratio from deposti/withdraw on MagicWallet.
 OkCoin  | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 OpenExchangeRates | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From unknown sources except Bitcoin wich is from CoinDesk (https://openexchangerates.org/faq#sources)
 Poloniex | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
@@ -181,6 +182,7 @@ export FIXER_APIKEY=
 export CURRENCYLAYER_APIKEY=
 export ALPHAVANTAGE_APIKEY=
 export WORLDCOININDEX_APIKEY= 
+export MAGICWALLET_APIKEY=
 ```
 
 To run all tests use:  `pytest`.

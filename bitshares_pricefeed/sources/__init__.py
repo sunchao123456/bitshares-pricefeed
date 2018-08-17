@@ -29,3 +29,4 @@ from .manual import Manual
 from .coinegg import CoinEgg
 from .composite import Composite
 from .cointiger import CoinTiger
+from .magicwallet import MagicWallet
