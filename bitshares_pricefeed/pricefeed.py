@@ -7,7 +7,7 @@ from bitshares.asset import Asset
 from bitshares.price import Price
 from bitshares.amount import Amount
 from bitshares.market import Market
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from . import sources
 import logging
 log = logging.getLogger(__name__)
@@ -95,8 +95,8 @@ class Feed(object):
             self.price_result[symbol]["flags"].append("skip_change")
 
         # Feed too old
-        feed_age = self.price_result[symbol]["current_feed"]["date"] if self.price_result[symbol]["current_feed"] else datetime.min
-        if (datetime.utcnow() - feed_age).total_seconds() > self.assetconf(symbol, "maxage"):
+        feed_age = self.price_result[symbol]["current_feed"]["date"] if self.price_result[symbol]["current_feed"] else datetime.min.replace(tzinfo=timezone.utc)
+        if (datetime.now(timezone.utc) - feed_age).total_seconds() > self.assetconf(symbol, "maxage"):
             self.price_result[symbol]["flags"].append("over_max_age")
 
     def get_cer(self, symbol, price):
