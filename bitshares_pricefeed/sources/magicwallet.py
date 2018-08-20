@@ -14,7 +14,6 @@ class MagicWallet(FeedSource):
 
     def _compute_rate_and_volume(self, data, period):
         for stat in data:
-            print(stat)
             if stat['datatype'] == period:
                 dbitcny = float(stat['depositBitCNY'])
                 wbitcny = float(stat['withdrawBitCNY'])
@@ -22,6 +21,8 @@ class MagicWallet(FeedSource):
                 wfiatcny = float(stat['withdrawFiatCNY'])
                 dcount = int(stat['depositCount'])
                 wcount = int(stat['withdrawCount'])
+                if (dcount + wcount) == 0:
+                    return (1, 0)
                 return (round((dfiatcny + wfiatcny) / (dbitcny + wbitcny), 4), dcount + wcount)
         raise Exception("Invalid period {}, should be one of: ".format(period, self.valid_periods))
 
