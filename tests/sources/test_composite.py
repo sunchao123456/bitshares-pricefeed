@@ -1,3 +1,4 @@
+import re
 from bitshares_pricefeed.sources.composite import Composite
 
 sample_conf = {
@@ -67,7 +68,7 @@ def test_composite_median(checkers):
     checkers.check_feed(feed, ['USD:BTS'])
     assert feed['BTS']['USD']['price'] == 2
     assert feed['BTS']['USD']['volume'] == 23
-    assert feed['BTS']['USD']['source'] == 'median(source1, source2, source3)'
+    assert bool(re.match(r'median\(source[1-3], source[1-3], source[1-3]\)', feed['BTS']['USD']['source']))
 
 def test_composite_mean(checkers):
     import statistics
@@ -78,7 +79,7 @@ def test_composite_mean(checkers):
     checkers.check_feed(feed, ['USD:BTS'])
     assert feed['BTS']['USD']['price'] == statistics.mean([1, 2, 50])
     assert feed['BTS']['USD']['volume'] == 23
-    assert feed['BTS']['USD']['source'] == 'mean(source1, source2, source3)'
+    assert bool(re.match(r'mean\(source[1-3], source[1-3], source[1-3]\)', feed['BTS']['USD']['source']))
 
 def test_composite_weighted_mean(checkers):
     import statistics
@@ -89,7 +90,7 @@ def test_composite_weighted_mean(checkers):
     checkers.check_feed(feed, ['USD:BTS'])
     assert feed['BTS']['USD']['price'] == 4
     assert feed['BTS']['USD']['volume'] == 23
-    assert feed['BTS']['USD']['source'] == 'weighted_mean(source1, source2, source3)'
+    assert bool(re.match(r'weighted_mean\(source[1-3], source[1-3], source[1-3]\)', feed['BTS']['USD']['source']))
 
 def test_composite_first_valid(checkers):
     import statistics
