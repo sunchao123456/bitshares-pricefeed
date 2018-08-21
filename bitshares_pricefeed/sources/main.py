@@ -40,6 +40,7 @@ class FeedSource():
     def __init__(self, scaleVolumeBy=1.0,
                  enable=True,
                  allowFailure=True,
+                 allowCache=False,
                  timeout=5,
                  quotes=[],
                  bases=[],
@@ -48,6 +49,7 @@ class FeedSource():
         self.scaleVolumeBy = scaleVolumeBy
         self.enabled = enable
         self.allowFailure = allowFailure
+        self.allowCache = allowCache
         self.timeout = timeout
         self.bases = bases
         self.aliases = aliases
@@ -61,10 +63,15 @@ class FeedSource():
     def fetch(self):
         try:
             feed = self._fetch()
-            self.updateCache(feed)
+            if self.allowCache:
+                self.updateCache(feed)
             return feed
         except Exception as e:
             traceback.print_exc()
+            if not self.allowCache:
+                print("\n{0} encountered an error while loading live data.".format(type(self).__name__))
+                return {}
+
             print("\n{0} encountered an error while loading live data. Trying to recover from cache!".format(type(self).__name__))
 
             # Terminate if not allow Failure
