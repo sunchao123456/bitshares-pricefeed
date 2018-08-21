@@ -33,22 +33,6 @@ log = logging.getLogger(__name__)
     # type=click.File('r'),
 )
 @click.option(
-    "--dry-run",
-    is_flag=True,
-    help="Only compute prices and print result, no publication.",
-    default=False,
-)
-@click.option(
-    "--confirm-warning/--no-confirm-warning",
-    help="Need for manual confirmation of warnings",
-    default=True,
-)
-@click.option(
-    "--skip-critical/--no-skip-critical",
-    help="Skip critical feeds",
-    default=False,
-)
-@click.option(
     "--node",
     metavar='<wss://host:port>',
     help="Node to connect to",
@@ -58,8 +42,6 @@ def main(ctx, **kwargs):
     ctx.obj = {}
     for k, v in kwargs.items():
         ctx.obj[k] = v
-    if ctx.obj['dry_run']:
-        ctx.obj['unsigned'] = True
 
 
 @main.command()
@@ -129,17 +111,55 @@ def create(ctx, example):
     click.echo("Config file created: %s" % config_file)
 
 
+
+def configure_dry_run(ctx, param, value):
+    if value:
+        ctx.obj['unsigned'] = True
+    return value
+
+def configure_active_key(ctx, param, value):
+    if value:
+        print("Configure keys in memory: {}".format(value))
+        ctx.obj['keys'] = { 'active': value }
+        ctx.obj['unsigned'] = True
+
 @main.command()
-@click.argument(
-    "assets",
-    nargs=-1,
-    required=False,
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Only compute prices and print result, no publication.",
+    default=False,
+    callback=configure_dry_run,
+    is_eager=True
+)
+@click.option(
+    "--active-key",
+    metavar='WIF',
+    help="Active key to be used to sign transactions.",
+    callback=configure_active_key,
+    expose_value=False, 
+    is_eager=True
+)
+@click.option(
+    "--confirm-warning/--no-confirm-warning",
+    help="Need for manual confirmation of warnings",
+    default=True,
+)
+@click.option(
+    "--skip-critical/--no-skip-critical",
+    help="Skip critical feeds",
+    default=False,
 )
 @click.pass_context
 @configfile
 @chain
 @unlock
-def update(ctx, assets):
+@click.argument(
+    "assets",
+    nargs=-1,
+    required=False,
+)
+def update(ctx, assets, dry_run, confirm_warning, skip_critical):
     """ Update price feed for assets
     """
     exitcode = 0
@@ -155,11 +175,13 @@ def update(ctx, assets):
     print_log(prices)
     print_prices(prices)
 
-    if ctx.obj['dry_run']:
+    if dry_run:
         return
 
     # Bundle all operation in one transaction.
     ctx.bitshares.bundle = True
+    # Assert that we sign the transactions.
+    ctx.bitshares.unsigned = False
 
     for symbol, price in prices.items():
         # Skip empy symbols
@@ -178,7 +200,7 @@ def update(ctx, assets):
             continue
 
         if (
-            ctx.obj["confirm_warning"] and
+            confirm_warning and
             "over_warn_change" in flags and
             "skip_change" not in flags
         ):
@@ -191,7 +213,7 @@ def update(ctx, assets):
                 continue
 
         if "skip_change" in flags:
-            if ctx.obj["skip_critical"]:
+            if skip_critical:
                 alert(
                     "Price change for %s (%f) has been above 'skip_change'.  Skipping!" % (
                         symbol,
