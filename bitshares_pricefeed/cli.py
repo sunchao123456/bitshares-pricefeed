@@ -158,6 +158,9 @@ def update(ctx, assets):
     if ctx.obj['dry_run']:
         return
 
+    # Bundle all operation in one transaction.
+    ctx.bitshares.bundle = True
+
     for symbol, price in prices.items():
         # Skip empy symbols
         if not price:
