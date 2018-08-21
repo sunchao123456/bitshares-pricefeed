@@ -165,6 +165,10 @@ def update(ctx, assets):
 
         flags = price["flags"]
 
+        if "skip_inactive_witness" in flags:
+            alert("Witness is inactive, skipping {}.".format(symbol))
+            continue
+
         # Prices that don't move sufficiently, or are not too old, can
         # be skipped right away
         if "min_change" not in flags and "over_max_age" not in flags:

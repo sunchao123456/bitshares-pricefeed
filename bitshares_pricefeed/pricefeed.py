@@ -2,11 +2,14 @@ import statistics
 import numpy as num
 import time
 from math import *
+from bitshares.instance import shared_bitshares_instance
 from bitshares.account import Account
 from bitshares.asset import Asset
 from bitshares.price import Price
 from bitshares.amount import Amount
 from bitshares.market import Market
+from bitshares.witness import Witness
+from bitshares.exceptions import AccountDoesNotExistsException
 from datetime import datetime, date, timedelta, timezone
 from . import sources
 import logging
@@ -33,11 +36,24 @@ class Feed(object):
         self.config = config
         self.reset()
         self.getProducer()
+        self.get_witness_activeness()
 
     def getProducer(self):
         """ Get the feed producers account
         """
         self.producer = Account(self.config["producer"])
+
+    def get_witness_activeness(self):
+        """ See if producer account is an active witness
+        """
+        try:
+            witness = Witness(self.config["producer"])
+            global_properties = shared_bitshares_instance().rpc.get_global_properties()
+            self.is_active_witness = bool(witness['id'] in global_properties['active_witnesses'])
+        except AccountDoesNotExistsException:
+            self.is_active_witness = False
+
+            
 
     def reset(self):
         """ Reset all for-processing variables
@@ -93,6 +109,10 @@ class Feed(object):
         # Check max price change
         if fabs(self.price_result[symbol]["priceChange"]) > fabs(self.assetconf(symbol, "skip_change")):
             self.price_result[symbol]["flags"].append("skip_change")
+        
+        # Skip if witness is not active if flag is set.
+        if self.assetconf(symbol, "skip_inactive_witness", no_fail=True) and not self.is_active_witness:
+            self.price_result[symbol]["flags"].append("skip_inactive_witness")
 
         # Feed too old
         feed_age = self.price_result[symbol]["current_feed"]["date"] if self.price_result[symbol]["current_feed"] else datetime.min.replace(tzinfo=timezone.utc)

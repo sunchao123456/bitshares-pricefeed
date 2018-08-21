@@ -266,6 +266,9 @@ default:
     # skip publishing a feed if price goes above this percentage
     skip_change: 3
 
+    # skip publishing a feed if producer is not an active witness.
+    skip_inactive_witness: True
+
     # how to derive a single price from several sources
     # Choose from: "median", "mean", or "weighted" (by volume)
     metric: weighted
