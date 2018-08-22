@@ -120,12 +120,8 @@ class Feed(object):
             self.price_result[symbol]["flags"].append("over_max_age")
 
     def get_cer(self, symbol, price):
-        if (
-            symbol in self.config["assets"] and
-            self.config["assets"][symbol] and
-            "core_exchange_rate" in self.config["assets"][symbol]
-        ):
-            cer = self.config["assets"][symbol]["core_exchange_rate"]
+        if self.assethasconf(symbol, "core_exchange_rate"):
+            cer = self.assetconf(symbol, "core_exchange_rate")
             required = ["orientation", "factor", "ref_ticker", "ref_ticker_attribute"]
             if any([x not in cer for x in required]):
                 raise ValueError(
@@ -167,29 +163,17 @@ class Feed(object):
     def assetconf(self, symbol, parameter, no_fail=False):
         """ Obtain the configuration for an asset, if not present, use default
         """
-        if (
-            symbol in self.config["assets"] and
-            self.config["assets"][symbol] and
-            parameter in self.config["assets"][symbol]
-        ):
+        if self.assethasconf(symbol, parameter):
             return self.config["assets"][symbol][parameter]
-        else:
-            if "default" not in self.config:
-                if no_fail:
-                    return
-                raise ValueError("%s for %s not defined!" % (
-                    parameter,
-                    symbol
-                ))
-            if parameter not in self.config["default"]:
-                if no_fail:
-                    return
-                raise ValueError("%s for %s not defined!" % (
-                    parameter,
-                    symbol
-                ))
-
+        elif "default" in self.config and parameter in self.config["default"]:
             return self.config["default"][parameter]
+        else:
+            if no_fail:
+                return
+            raise ValueError("%s for %s not defined!" % (
+                parameter,
+                symbol
+            ))
 
     def addPrice(self, base, quote, price, volume, sources=None):
         """ Add a price to the instances, temporary storage
