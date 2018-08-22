@@ -4,6 +4,16 @@ confirm: False
 # The producer name(s)
 producer: $PRODUCER
 
+exchanges:
+    hero:
+        klass: Hero
+        enable: True
+    bitshares:
+        klass: BitsharesFeed
+        enable: True
+        assets:
+            - USD
+
 assets:
     HERO:
         # max age of a feed
@@ -22,27 +32,21 @@ assets:
         ###################
 
         # We want to feed according to a formula
-        type: formula
+        type: extern
 
-        # We want to refer to an internal asset
-        reference: intern 
+        # how to derive a single price from several sources
+        # Choose from: "median", "mean", or "weighted" (by volume)
+        metric: weighted
 
-        # ... namely "USD" a.k.a. "bitUSD"
-        ref_asset: USD
-
-        # The formula:
-        #####################################
-        # * 5% gain since creation of Federal Reserve System on 23th of December 1913.
-        # * (date.today() - date(1913, 12, 23)).days is the number of days since then
-        # * 365.2425 is the average number of days per year (https://en.wikipedia.org/wiki/Year)
-        # * relative to the USD price feed in BitShares
-        #####################################
-        formula: (1.05 ** ((date.today() - date(1913, 12, 23)).days / 365.2425) / {quoteSettlement_price})
-
-        # quoteSettlement_price is (forced to) defined in USD/BTS. The
-        # numerator is USD/HERO, thus the end result of formula is
-        # BTS/HERO
-        formula_orientation: BTS:HERO
+        # Select sources for this particular asset. Each source
+        # has its own fetch() method and collects several markets
+        # any market of an exchanges is considered but only the
+        # current asset's price is derived
+        #
+        # Choose from: - "*": all,
+        #              - loaded exchanges (see below)
+        sources:
+            - "*"
 
         # Maximum short squeeze ratio
         maximum_short_squeeze_ratio: 110.0
@@ -53,3 +57,11 @@ assets:
         # Core exchange factor for paying transaction fees in
         # non-BTS assets. Premium of 5%
         core_exchange_factor: 1.05
+
+        # If set to True, prices are also derived via 3
+        # markets instead of just two:
+        # E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+        derive_across_3markets: False
+
+intermediate_assets:
+    - USD

@@ -4,6 +4,7 @@ config = 'bitshares_pricefeed/examples/hertz.yaml'
 
 def test_hertz_computation(conf, checkers):
     feed = Feed(conf)
+    feed.fetch()
     feed.derive({'HERTZ'})
     prices = feed.get_prices()
     checkers.check_price(prices, 'HERTZ', 'BTS', 0.1)

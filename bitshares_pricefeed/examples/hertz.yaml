@@ -4,6 +4,17 @@ confirm: False
 # The producer name(s)
 producer: $PRODUCER
 
+exchanges:
+    hertz:
+        klass: Hertz
+        enable: True
+    bitshares:
+        klass: BitsharesFeed
+        enable: True
+        assets:
+            - USD
+
+
 assets:
     HERTZ:
         # max age of a feed
@@ -22,28 +33,22 @@ assets:
         ###################
 
         # We want to feed according to a formula
-        type: formula
+        type: extern
 
-        # We want to refer to an internal asset
-        reference: intern
+        # how to derive a single price from several sources
+        # Choose from: "median", "mean", or "weighted" (by volume)
+        metric: weighted
 
-        # ... namely "USD" a.k.a. "bitUSD"
-        ref_asset: USD
-
-        #####################################
-        # * Sin wave modulation of bitUSD (Ranges from $0.86 to $1.14 throughout the month via the 14% amplitude).
-        # * Uses Unix timestamps.
-        # * Starting timestamp is that of the 1st BTS2.0 block : http://bitshares-explorer.io/#/blocks/1 (2015-10-13T14:12:24 == 1444745544)
-        # * The timestamp offset is approximately 0.908056 days (added to the genesis timestamp)
-        # * The period is 28 days.
-        # * The amplitude of the sin wave is 0.14 (14%)
-        # * Verbose formula: {quoteSettlement_price} + ((({quoteSettlement_price} * Amplitude) * (SIN_CALCULATION( (((CurentTime - ReferenceTime)/Period) % 1) * Period) * ((2*3.1415926535)/Period))
+        # Select sources for this particular asset. Each source
+        # has its own fetch() method and collects several markets
+        # any market of an exchanges is considered but only the
+        # current asset's price is derived
         #
-        # New HERTZ assets could be created with different periods, amplitudes and wave formulas. Increasing the period and reducing the amplitude would make a more stable HERTZ ABA, where as decreasing the period and increasing the amplitude would result in a more volatile HERTZ ABA.
-        #####################################
-
-        formula: ({quoteSettlement_price}) + (({quoteSettlement_price} * (0.14)) * sin(((((time.time() - 1444824000.0384)/2419200) % 1) * 2419200) * ((2*pi)/2419200)))
-
+        # Choose from: - "*": all,
+        #              - loaded exchanges (see below)
+        sources:
+            - "*"
+        
         # Maximum short squeeze ratio
         maximum_short_squeeze_ratio: 110.0
 
@@ -53,3 +58,11 @@ assets:
         # Core exchange factor for paying transaction fees in
         # non-BTS assets. Premium of 5%
         core_exchange_factor: 1.20
+
+        # If set to True, prices are also derived via 3
+        # markets instead of just two:
+        # E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+        derive_across_3markets: False
+
+intermediate_assets:
+    - USD

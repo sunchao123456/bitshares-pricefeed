@@ -30,3 +30,5 @@ from .coinegg import CoinEgg
 from .composite import Composite
 from .cointiger import CoinTiger
 from .magicwallet import MagicWallet
+from .hertz import Hertz
+from .hero import Hero

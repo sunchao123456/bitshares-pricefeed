@@ -171,6 +171,11 @@ The main use cases is if you want to retrieve a pair like BTC/USD from multiples
 
 See example configuration in `examples/composite.yaml`
 
+#### Algorithm Based Assets
+
+Some assets use a computed formula as price like HERO or HERTZ. 
+Those are implemented with a source class that return the computed value, usually with USD as quote.
+
 ## Development
 
 To run tests you need get API keys for the providers, and register them as environment variables:
