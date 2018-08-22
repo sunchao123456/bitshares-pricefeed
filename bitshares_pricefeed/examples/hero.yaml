@@ -30,10 +30,6 @@ assets:
 
         # Basic Price setup
         ###################
-
-        # We want to feed according to a formula
-        type: extern
-
         # how to derive a single price from several sources
         # Choose from: "median", "mean", or "weighted" (by volume)
         metric: weighted

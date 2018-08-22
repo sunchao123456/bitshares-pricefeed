@@ -88,10 +88,6 @@ exchanges:
         
 # default settings
 default:
-
-    # Type: extern, formula, alias
-    type: extern
-
     # max age of a feed
     maxage: 43200
 

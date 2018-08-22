@@ -1,7 +1,7 @@
 import statistics
 import numpy as num
 import time
-from math import *
+from math import fabs, sqrt
 from bitshares.instance import shared_bitshares_instance
 from bitshares.account import Account
 from bitshares.asset import Asset
@@ -10,7 +10,7 @@ from bitshares.amount import Amount
 from bitshares.market import Market
 from bitshares.witness import Witness
 from bitshares.exceptions import AccountDoesNotExistsException
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, date, timezone
 from . import sources
 import logging
 log = logging.getLogger(__name__)
@@ -339,8 +339,8 @@ class Feed(object):
                                     ]
                                 )
 
-    def type_extern(self, symbol):
-        """ Derive prices when the type is 'extern' by adding data from the
+    def derive_asset(self, symbol):
+        """ Derive prices for an asset by adding data from the
             exchanges to the internal state and processing through markets
         """
         asset = Asset(symbol, full=True)
@@ -349,15 +349,6 @@ class Feed(object):
         short_backing_asset = Asset(asset["bitasset_data"]["options"]["short_backing_asset"])
         backing_symbol = short_backing_asset["symbol"]
         asset["short_backing_asset"] = short_backing_asset
-
-        if self.assetconf(symbol, "type") not in ["extern", "alias"]:
-            return
-
-        if self.assetconf(symbol, "type") == "alias":
-            alias = self.assetconf(symbol, "alias")
-            asset = Asset(alias, full=True)
-        else:
-            alias = symbol
 
         # Reset self.data
         self.reset()
@@ -369,18 +360,18 @@ class Feed(object):
         self.derive3Markets(asset, backing_symbol)
         log.info("Computed data (after derivation): \n{}".format(self.data))
 
-        if alias not in self.data:
-            log.warn("'{}' not in self.data".format(alias))
+        if symbol not in self.data:
+            log.warn("'{}' not in self.data".format(symbol))
             return
-        if backing_symbol not in self.data[alias]:
-            log.warn("'backing_symbol' ({}) not in self.data[{}]".format(backing_symbol, alias))
+        if backing_symbol not in self.data[symbol]:
+            log.warn("'backing_symbol' ({}) not in self.data[{}]".format(backing_symbol, symbol))
             return
-        assetvolume = [v["volume"] for v in self.data[alias][backing_symbol]]
-        assetprice = [p["price"] for p in self.data[alias][backing_symbol]]
+        assetvolume = [v["volume"] for v in self.data[symbol][backing_symbol]]
+        assetprice = [p["price"] for p in self.data[symbol][backing_symbol]]
 
         if len(assetvolume) > 1:
-            price_median = statistics.median([x["price"] for x in self.data[alias][backing_symbol]])
-            price_mean = statistics.mean([x["price"] for x in self.data[alias][backing_symbol]])
+            price_median = statistics.median([x["price"] for x in self.data[symbol][backing_symbol]])
+            price_mean = statistics.mean([x["price"] for x in self.data[symbol][backing_symbol]])
             price_weighted = num.average(assetprice, weights=assetvolume)
             price_std = weighted_std(assetprice, assetvolume)
         elif len(assetvolume) == 1:
@@ -422,60 +413,6 @@ class Feed(object):
             "log": self.data
         }
 
-    def type_intern(self, symbol):
-        """ Process a price from a formula
-        """
-        asset = Asset(symbol, full=True)
-        short_backing_asset = Asset(asset["bitasset_data"]["options"]["short_backing_asset"])
-        backing_symbol = short_backing_asset["symbol"]
-        asset["short_backing_asset"] = short_backing_asset
-
-        if self.assetconf(symbol, "type") != "formula":
-            return
-
-        if self.assetconf(symbol, "reference") == "extern":
-            price = eval(
-                self.assetconf(symbol, "formula").format(
-                    **self.price_result))
-        elif self.assetconf(symbol, "reference") == "intern":
-            # Parse the formula according to ref_asset
-            if self.assethasconf(symbol, "ref_asset"):
-                ref_asset = self.assetconf(symbol, "ref_asset")
-                market = Market("%s:%s" % (ref_asset, backing_symbol))
-                ticker_raw = market.ticker()
-                ticker = {}
-                for k, v in ticker_raw.items():
-                    if isinstance(v, Price):
-                        ticker[k] = float(v.as_quote(backing_symbol))
-                    elif isinstance(v, Amount):
-                        ticker[k] = float(v)
-                price = eval(str(
-                    self.assetconf(symbol, "formula")).format(**ticker))
-            else:
-                price = eval(str(self.assetconf(symbol, "formula")))
-        else:
-            raise ValueError("Missing 'reference' for asset %s" % symbol)
-
-        orientation = self.assetconf(symbol, "formula_orientation", no_fail=True)\
-            or "{}:{}".format(symbol, backing_symbol)   # default value
-        price = Price(price, orientation).as_quote(backing_symbol)
-
-        cer = self.get_cer(symbol, price)
-
-        self.price_result[symbol] = {
-            "price": float(price),
-            "cer": cer,
-            "number": 1,
-            "short_backing_symbol": backing_symbol,
-            "mean": price,
-            "median": price,
-            "weighted": price,
-            "mssr": self.assetconf(symbol, "maximum_short_squeeze_ratio"),
-            "mcr": self.assetconf(symbol, "maintenance_collateral_ratio"),
-            "std": 0.0,
-            "number": 1,
-        }
-
     def derive(self, assets_derive=set()):
         """ calculate self.feed prices in BTS for all assets given the exchange prices in USD,CNY,BTC,...
         """
@@ -489,13 +426,8 @@ class Feed(object):
         for symbol in assets_derive:
             self.price_result[symbol] = {}
 
-        # Derive 'external' price feed
         for symbol in assets_derive:
-            self.type_extern(symbol)
-
-        # Formula feeds
-        for symbol in assets_derive:
-            self.type_intern(symbol)
+            self.derive_asset(symbol)
 
         # tests
         for symbol in assets_derive:
