@@ -119,7 +119,6 @@ def configure_dry_run(ctx, param, value):
 
 def configure_active_key(ctx, param, value):
     if value:
-        print("Configure keys in memory: {}".format(value))
         ctx.obj['keys'] = { 'active': value }
         ctx.obj['unsigned'] = True
 
