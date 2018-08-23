@@ -31,7 +31,6 @@ exchanges:
     ####################################
     fixer:
         klass: Fixer
-        enable: True
         api_key: 
         free_subscription: True
         quotes:
@@ -61,7 +60,6 @@ exchanges:
             RUB: RUBLE
     openexchangerates:
         klass: OpenExchangeRates
-        enable: True
         api_key: 
         free_subscription: True
         quotes:
@@ -87,7 +85,6 @@ exchanges:
             - USD
     currencylayer:
         klass: CurrencyLayer
-        enable: True
         api_key: 
         free_subscription: True
         quotes:
@@ -119,7 +116,6 @@ exchanges:
     ####################################
     quandl:
         klass: Quandl 
-        enable: True
         api_key:
         datasets:
             "GOLD:USD": 
@@ -132,7 +128,6 @@ exchanges:
     ####################################
     bitstamp:
         klass: Bitstamp
-        enable: True
         quotes:
             - BTC
         bases:
@@ -142,7 +137,6 @@ exchanges:
         klass: BitcoinAverage
         secret_key:
         public_key:
-        enable: True
         quotes:
             - BTC
         bases:
@@ -151,7 +145,6 @@ exchanges:
             - CNY
     okcoin:
         klass: Okcoin
-        enable: True
         quotes:
             - BTC
         bases:
@@ -168,7 +161,6 @@ exchanges:
     ####################################
     poloniex:
         klass: Poloniex
-        enable: True
         quotes:
             - BTS
         bases:
@@ -182,15 +174,12 @@ exchanges:
             - BTC
     zb:
         klass: Zb
-        enable: True
         quotes:
             - BTS
         bases:
             - BTC
     bitshares:
         klass: Graphene
-        enable: True
-        url: wss://bitshares.openledger.info/ws
         quotes:
             - USD
             - CNY
@@ -198,7 +187,6 @@ exchanges:
             - BTS
     coinmarketcap:
         klass: Coinmarketcap
-        enable: True
         quotes:
             - BTC
             - BTS
@@ -207,14 +195,12 @@ exchanges:
             - USD
     aex:
         klass: Aex
-        enable: True
         quotes:
             - BTS
         bases:
             - BTC
     lbank:
         klass: Lbank
-        enable: True
         quotes:
             - BTS
         bases:

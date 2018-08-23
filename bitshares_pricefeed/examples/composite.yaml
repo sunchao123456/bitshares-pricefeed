@@ -13,11 +13,9 @@ exchanges:
   best_btc_price:
     klass: Composite
     aggregation_type: 'max'
-    enable: True
     exchanges:
       worldcoinindex:
           klass: WorldCoinIndex
-          enable: True
           api_key: $WORLDCOININDEX_API_KEY
           free_subscription: True
           quotes:
@@ -26,14 +24,12 @@ exchanges:
               - USD
       coinmarketcap:
           klass: Coinmarketcap
-          enable: True
           quotes:
               - BTC
           bases:
               - USD
       coindesk:
           klass: Coindesk
-          enable: True
           quotes:
               - BTC
           bases:
@@ -42,11 +38,9 @@ exchanges:
   average_fiat_price:
     klass: Composite
     aggregation_type: 'mean'
-    enable: True
     exchanges:
       fixer:
           klass: Fixer
-          enable: True
           api_key: $FIXER_API_KEY
           free_subscription: True
           quotes:
@@ -56,7 +50,6 @@ exchanges:
               - USD
       openexchangerates:
           klass: OpenExchangeRates
-          enable: True
           api_key: $OPENEXCHANGERATE_API_KEY
           free_subscription: True
           quotes:
@@ -67,7 +60,6 @@ exchanges:
               - USD
       currencylayer:
           klass: CurrencyLayer
-          enable: True
           api_key: $CURRENCYLAYER_API_KEY
           free_subscription: True
           quotes:
@@ -79,7 +71,6 @@ exchanges:
 
   huobi:
       klass: Huobi
-      enable: True
       quotes:
           - BTS
       bases:

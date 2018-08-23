@@ -7,7 +7,6 @@ producer: $PRODUCER
 exchanges:
     xcd:
         klass: Manual
-        enable: True
         feed:
           USD:
             XCD:
@@ -15,7 +14,6 @@ exchanges:
               volume: 1.0
     bitshares:
         klass: BitsharesFeed
-        enable: True
         assets:
             - USD
 

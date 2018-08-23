@@ -213,7 +213,7 @@ class Feed(object):
             return
 
         for datasource in self.get_sources(symbol):
-            if not self.config["exchanges"][datasource].get("enable", False):
+            if not self.config["exchanges"][datasource].get("enable", True):
                 log.info('Skip disabled source {}'.format(datasource))
                 continue
             log.info("appendOriginalPrices({}) from {}".format(symbol, datasource))

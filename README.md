@@ -147,7 +147,6 @@ Example:
 exchanges:
   manual:
     klass: Manual
-    enable: True
     feed:
       USD:
         BTS:
