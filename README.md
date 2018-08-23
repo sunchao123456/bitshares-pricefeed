@@ -109,7 +109,6 @@ AlphaVantage | OK | FIAT, Stocks, BTC | Yes | last from unknown source for curre
 Big.One | KO | Crypto | Yes | not implemented
 Binance | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
 BitcoinAverage | KO | Crypto | No | used API is deprecated not maintained anymore, need to be upgraded to ApiV2
-Bitcoin Indonesia | KO | Crypto | No | not working anymore, API has changed
 Bitcoin Venezuela | OK | Crypto | No | ticker from api with 15 minutes delay, no volume
 BitsharesFeed | OK | Crypto (MPA) | No | current feed price in Bitshares DEX, no volume.
 Bitstamp | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
@@ -123,6 +122,7 @@ Fixer | OK | FIAT | Yes |  Very similar to CurrencyLayer, ticker from api, daily
 Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) from Bitshares DEX in realtime
 Huobi | OK | Crypto | No | close price and volume (in quote currency) from CEX API in realtime
 IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 
+IndoDax | OK | Crypto | No | last and volume (in quote currency) from CEX ticker API.
 LBank | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 MagicWallet | OK | BITCNY/CNY | Yes | BITCNY/CNY ratio from deposti/withdraw on MagicWallet.
 OkCoin  | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime

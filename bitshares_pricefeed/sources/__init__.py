@@ -2,7 +2,6 @@ from .main import FeedSource, _request_headers, fetch_all
 
 # Exchanges
 from .bitcoinaverage import BitcoinAverage
-from .bitcoinindonesia import BitcoinIndonesia
 from .bitcoinvenezuela import BitcoinVenezuela
 from .bittrex import Bittrex
 from .coincap import Coincap
@@ -11,6 +10,7 @@ from .currencylayer import CurrencyLayer
 from .fixer import Fixer
 from .graphene import Graphene
 from .huobi import Huobi
+from .indodax import IndoDax
 from .okcoin import Okcoin
 from .openexchangerate import OpenExchangeRates
 from .poloniex import Poloniex, PoloniexVWAP
