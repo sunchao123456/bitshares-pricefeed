@@ -40,7 +40,6 @@ setup(
         "colorama",
         "tqdm",
         "pyyaml",
-        "bitcoinaverage",
         "quandl"
     ],
     setup_requires=['pytest-runner'],
