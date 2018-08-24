@@ -52,3 +52,24 @@ class Coinmarketcap(FeedSource):
             if 'ALTCAP.X' in self.quotes:
                 self.add_rate(feed, 'BTC', 'ALTCAP.X', btc_altcapx_price, 1.0)
         return feed
+
+class CoinmarketcapPro(FeedSource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not hasattr(self, 'api_key'):
+            raise Exception("CoinmarketcapPro FeedSource requires 'api_key'.")
+
+    def _fetch(self):
+        feed = {}
+        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol={}&convert={}'
+        headers = { **_request_headers, 'X-CMC_PRO_API_KEY': self.api_key }
+        all_quotes = ','.join(self.quotes)
+        for base in self.bases:
+            response = requests.get(url=url.format(all_quotes, base), headers=headers, timeout=self.timeout)
+            result = response.json()
+            for quote, ticker in result['data'].items():
+                price = ticker['quote'][base]['price']
+                volume = ticker['quote'][base]['volume_24h'] / price
+                self.add_rate(feed, base, quote, price, volume)
+
+        return feed

@@ -115,7 +115,8 @@ Bitstamp | OK | Crypto | No | last and volume (in quote currency) from CEX ticke
 Bittrex | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
 Coincap | OK | ALTCAP & ALTCAP.X | No | use provided market cap, no volume
 CoinEgg | OK | Crypto |No | last and volume (in quote currency) from CEX ticker api
-Coinmarketcap | OK | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). TODO: Migrate to v2 before 30 November 2018
+Coinmarketcap | Warn | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). V1 API will be closed December 4th, 2018. 
+CoinmarketcapPro | OK | Crypto | Yes | volume weighted average of all prices reported at each market, volume in quote, 1 minutes delay. Use v2 api.
 Currencylayer | OK | FIAT, BTC | Yes | ticker from api, only USD as base and hourly updated with free subscription, no volume info. From various source (https://currencylayer.com/faq)
 CoinTiger | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
 Fixer | OK | FIAT | Yes |  Very similar to CurrencyLayer, ticker from api, daily from European Central Bank, only EUR with free subscription, no volume info.
@@ -187,6 +188,7 @@ export CURRENCYLAYER_APIKEY=
 export ALPHAVANTAGE_APIKEY=
 export WORLDCOININDEX_APIKEY= 
 export MAGICWALLET_APIKEY=
+export COINMARKETCAP_APIKEY=
 ```
 
 To run all tests use:  `pytest`.
