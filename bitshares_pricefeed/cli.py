@@ -196,7 +196,11 @@ def update(ctx, assets, dry_run, confirm_warning, skip_critical):
         # Prices that don't move sufficiently, or are not too old, can
         # be skipped right away
         if "min_change" not in flags and "over_max_age" not in flags:
+            print('Price of %s did not moved sufficiently (%.2f%%). Skipping!' % (symbol, price['priceChange']))
             continue
+
+        if "min_change" not in flags and "over_max_age" in flags:
+            print('Price of %s is tool old, forcing republication.' % (symbol, ))
 
         if (
             confirm_warning and
@@ -250,10 +254,11 @@ def update(ctx, assets, dry_run, confirm_warning, skip_critical):
             account=ctx.config["producer"]
         )
 
+    ctx.bitshares.txbuffer.constructTx()
+    pprint(ctx.bitshares.txbuffer.json())
+
     # Always ask for confirmation if this flag is set to true
     if "confirm" in ctx.config and ctx.config["confirm"]:
-        ctx.bitshares.txbuffer.constructTx()
-        pprint(ctx.bitshares.txbuffer.json())
         if not confirmwarning(
             "Please confirm"
         ):
