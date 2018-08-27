@@ -35,8 +35,8 @@ class Feed(object):
     def __init__(self, config):
         self.config = config
         self.reset()
-        self.getProducer()
         self.get_witness_activeness()
+        self.getProducer()
 
     def getProducer(self):
         """ Get the feed producers account
@@ -52,8 +52,6 @@ class Feed(object):
             self.is_active_witness = bool(witness['id'] in global_properties['active_witnesses'])
         except AccountDoesNotExistsException:
             self.is_active_witness = False
-
-            
 
     def reset(self):
         """ Reset all for-processing variables
