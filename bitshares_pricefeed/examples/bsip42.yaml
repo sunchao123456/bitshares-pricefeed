@@ -1,0 +1,213 @@
+# If true, a new price feed needs manual confirmation
+confirm: True
+
+# The producer name(s)
+producer: $PRODUCER
+
+# Exchange settings (Here, you may need to add API keys)
+exchanges:
+    ####################################
+    # BTC Exchange Rates
+    ####################################
+    btc_price:
+        klass: Composite
+        aggregation_type: 'first_valid'
+        order: ['coinmarketcap', 'worldcoinindex', 'coindesk']
+        exchanges:
+            worldcoinindex:
+                klass: WorldCoinIndex
+                api_key: 
+                free_subscription: True
+                quotes:
+                    - BTC
+                    - USDT
+                    - ETH
+                bases:
+                    - USD
+            coinmarketcap:
+                klass: Coinmarketcap
+                quotes:
+                    - USDT
+                    - BTC
+                    - ETH
+                bases:
+                    - USD
+            
+    ####################################
+    # Crypto Exchange Rates
+    ####################################
+    aex:
+        klass: Aex
+        quotes:
+            - BTS
+        bases:
+            - USDT
+            - CNC
+        aliases:
+            CNC: CNY
+    binance:
+        klass: Binance
+        quotes:
+            - BTS
+        bases:
+            - BTC
+    openledger:
+        klass: Graphene
+        quotes:
+            - BTS
+        bases:
+            - OPEN.BTC
+        aliases:
+            OPEN.BTC: BTC
+    gdex:
+        klass: Graphene
+        quotes:
+            - BTS
+        bases:
+            - GDEX.BTC
+        aliases:
+            GDEX.BTC: BTC
+    bitshares:
+        klass: Graphene
+        quotes:
+            - CNY
+        bases:
+            - BTS
+        aliases:
+            CNY: BITCNY
+    coinegg:
+        klass: CoinEgg
+        quotes:
+            - BTS
+        bases:
+            - BTC
+    cointiger:
+        klass: CoinTiger
+        quotes:
+            - BTS
+            - BITCNY
+        bases:
+            - BTC
+            - ETH
+    gateio:
+        klass: GateIo
+        enable: False
+        quotes:
+            - BTS
+        bases:
+            - BTC
+            - USDT
+    huobi:
+        klass: Huobi
+        quotes:
+            - BTS
+        bases:
+            - BTC
+            - USDT
+            - ETH
+    lbank:
+        klass: Lbank
+        quotes:
+            - BTS
+        bases:
+            - BTC
+            - ETH
+    poloniex:
+        klass: Poloniex
+        quotes:
+            - BTS
+        bases:
+            - BTC
+    zb:
+        klass: Zb
+        quotes:
+            - BTS
+        bases:
+            - BTC
+            - USDT
+            - QC
+        aliases:
+            QC: CNY
+    magicwallet:
+        klass: MagicWallet
+        api_key: 
+        period: 1h
+        
+# default settings
+default:
+    # max age of a feed
+    maxage: 43200
+
+    # minimum percentage that forces a publish
+    min_change: 1
+
+    # warn if price change goes above this percentage
+    warn_change: 10
+
+    # skip publishing a feed if price goes above this percentage
+    skip_change: 20
+
+    # skip publishing a feed if producer is not an active witness.
+    skip_inactive_witness: True
+
+    # how to derive a single price from several sources
+    # Choose from: "median", "mean", or "weighted" (by volume)
+    metric: weighted
+
+    # Select sources for this particular asset. Each source
+    # has its own fetch() method and collects several markets
+    # any market of an exchanges is considered but only the
+    # current asset's price is derived
+    #
+    # Choose from: - "*": all,
+    #              - loaded exchanges (see below)
+    sources:
+        -*
+
+    # Core exchange factor for paying transaction fees in
+    # non-BTS assets. Premium of 5%
+    core_exchange_factor: 1.2
+
+    # maintenance collateral ratio (percentage)
+    maintenance_collateral_ratio: 175.0
+
+    # Maximum short squeeze ratio
+    maximum_short_squeeze_ratio: 110.0
+
+    # If set to True, prices are also derived via 3
+    # markets instead of just two:
+    # E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+    derive_across_3markets: True
+
+
+# Enabled assets that are derived if no asset is provided via command
+# line
+assets:
+    #BTC:
+    #USD:
+    CNY:
+        # One of:
+        #   
+        #   - 'adjusted_feed_price':  
+        #        formula: settlement_price * (1 + premium)
+        #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321707#msg321707
+        #
+        #   - 'adjusted_real_price_empowered': 
+        #        formula: real_price * pow(1 + premium, 1.8)
+        #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321699#msg321699
+        # 
+        #   - 'adjusted_dex_price_using_buckets':
+        #        formula: dex_price * (1 + (K * (premium * 100))) 
+        #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321713#msg321713
+        target_price_algorithm: 'adjusted_dex_price_using_buckets' 
+
+# Intermediate assets are useful for 2 and 3 market price derivation
+# E.g.: USD:BTC -> BTC:BTS = USD:BTS
+#       GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
+intermediate_assets:
+    #- CNY
+    - USD
+    - BTC
+    - USDT
+    - BITCNY
+    - ETH

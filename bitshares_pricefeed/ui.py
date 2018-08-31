@@ -41,7 +41,7 @@ def highlightLargeDeviation(value, ref, thres=5):
 
 
 def formatPrice(f):
-    return click.style("%.10f" % f, fg="yellow")
+    return click.style("%.6f" % f, fg="yellow")
 
 
 def formatStd(f):
@@ -83,7 +83,7 @@ def print_log(feeds):
 def print_prices(feeds):
     t = PrettyTable([
         "symbol", "collateral",
-        "new price", "cer",
+        "new price", "cer", "premium", "unadjusted price",
         "mean", "median", "wgt. avg.",
         "wgt. std (#)", "blockchain",
         "mssr", "mcr",
@@ -110,6 +110,8 @@ def print_prices(feeds):
             ("%s" % collateral),
             ("%s" % formatPrice(feed["price"])),
             ("%s" % formatPrice(feed["cer"])),
+            ("%.1f%%" % feed["premium"]),
+            ("%s (%s)" % (formatPrice(feed["unadjusted_price"]), priceChange(myprice, feed.get("unadjusted_price")))),
             ("%s (%s)" % (formatPrice(feed["mean"]), priceChange(myprice, feed.get("mean")))),
             ("%s (%s)" % (formatPrice(feed["median"]), priceChange(myprice, feed.get("median")))),
             ("%s (%s)" % (formatPrice(feed["weighted"]), priceChange(myprice, feed.get("weighted")))),

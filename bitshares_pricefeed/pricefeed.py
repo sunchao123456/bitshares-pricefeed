@@ -320,6 +320,35 @@ class Feed(object):
                                         self.data[interassetA][target_symbol][idx]["sources"]
                                     ]
                                 )
+    
+    # Cf BSIP-42: https://github.com/bitshares/bsips/blob/master/bsip-0042.md
+    def compute_target_price(self, symbol, backing_symbol, real_price):
+        ticker = Market("%s:%s" % (backing_symbol, symbol)).ticker()
+        dex_price = float(ticker["latest"])
+        settlement_price = float(ticker['baseSettlement_price'])
+        premium = (real_price / dex_price) - 1
+
+        target_price_algorithm = self.assetconf(symbol, "target_price_algorithm", no_fail=True)
+        
+        adjusted_price = real_price
+        if target_price_algorithm == 'adjusted_feed_price':
+            # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg321707#msg321707
+            adjusted_price = settlement_price * (1 + premium)
+        elif target_price_algorithm == 'adjusted_real_price_empowered':
+            # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg321699#msg321699
+            adjusted_price = real_price * pow(1 + premium, 1.8)
+        elif target_price_algorithm == 'adjusted_dex_price_using_buckets':
+            # Kudos to GDEX: https://bitsharestalk.org/index.php?topic=26315.msg321713#msg321713
+            if premium > 0 and premium <= 0.02:
+                adjusted_price = dex_price * (1 + (0.048 * (premium * 100))) 
+            elif premium <= 0.048:
+                adjusted_price = dex_price * 1.096
+            else:
+                adjusted_price = dex_price * (1 + (2 * premium)) 
+
+        return (premium, adjusted_price)
+
+
 
     def derive_asset(self, symbol):
         """ Derive prices for an asset by adding data from the
@@ -378,17 +407,21 @@ class Feed(object):
                 metric
             ))
 
+        (premium, target_price) = self.compute_target_price(symbol, backing_symbol, p)
+
         cer = self.get_cer(symbol, p)
 
         # price conversion to "price for one symbol" i.e.  base=*, quote=symbol
         self.price_result[symbol] = {
-            "price": p,
+            "price": target_price,
+            "unadjusted_price": p,
             "cer": cer,
             "mean": price_mean,
             "median": price_median,
             "weighted": price_weighted,
             "std": price_std * 100,  # percentage
             "number": len(assetprice),
+            "premium": premium * 100, # percentage
             "short_backing_symbol": backing_symbol,
             "mssr": self.assetconf(symbol, "maximum_short_squeeze_ratio"),
             "mcr": self.assetconf(symbol, "maintenance_collateral_ratio"),
