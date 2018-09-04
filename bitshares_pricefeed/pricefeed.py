@@ -336,15 +336,19 @@ class Feed(object):
             adjusted_price = settlement_price * (1 + premium)
         elif target_price_algorithm == 'adjusted_real_price_empowered':
             # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg321699#msg321699
-            adjusted_price = real_price * pow(1 + premium, 1.8)
+            # Kudos to gghi: https://bitsharestalk.org/index.php?topic=26839.msg321863#msg321863
+            theorical_premium = self.assetconf(symbol, "target_price_theorical_premium")
+            acceleration_factor = self.assetconf(symbol, "target_price_acceleration_factor")
+            adjusted_price = real_price * pow(1 + premium + theorical_premium, acceleration_factor)
         elif target_price_algorithm == 'adjusted_dex_price_using_buckets':
             # Kudos to GDEX: https://bitsharestalk.org/index.php?topic=26315.msg321713#msg321713
-            if premium > 0 and premium <= 0.02:
-                adjusted_price = dex_price * (1 + (0.048 * (premium * 100))) 
-            elif premium <= 0.048:
-                adjusted_price = dex_price * 1.096
-            else:
-                adjusted_price = dex_price * (1 + (2 * premium)) 
+            if premium > 0:
+                if premium <= 0.02:
+                    adjusted_price = dex_price * (1 + (0.048 * (premium * 100))) 
+                elif premium <= 0.048:
+                    adjusted_price = dex_price * 1.096
+                else:
+                    adjusted_price = dex_price * (1 + (2 * premium)) 
 
         return (premium, adjusted_price)
 
