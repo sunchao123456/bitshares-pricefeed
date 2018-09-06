@@ -341,14 +341,14 @@ class Feed(object):
             acceleration_factor = self.assetconf(symbol, "target_price_acceleration_factor")
             adjusted_price = real_price * pow(1 + premium + theorical_premium, acceleration_factor)
         elif target_price_algorithm == 'adjusted_dex_price_using_buckets':
-            # Kudos to GDEX: https://bitsharestalk.org/index.php?topic=26315.msg321713#msg321713
+            # Kudos to GDEX: https://bitsharestalk.org/index.php?topic=26315.msg321931#msg321931
             if premium > 0:
-                if premium <= 0.02:
-                    adjusted_price = dex_price * (1 + (0.048 * (premium * 100))) 
-                elif premium <= 0.048:
+                if premium <= 0.01:
+                    adjusted_price = dex_price * (1 + (0.096 * (premium * 100))) 
+                elif premium <= 0.024:
                     adjusted_price = dex_price * 1.096
                 else:
-                    adjusted_price = dex_price * (1 + (2 * premium)) 
+                    adjusted_price = dex_price * (1 + (4 * premium)) 
 
         return (premium, adjusted_price)
 
