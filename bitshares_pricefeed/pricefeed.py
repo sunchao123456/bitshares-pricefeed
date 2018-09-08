@@ -332,8 +332,9 @@ class Feed(object):
         
         adjusted_price = real_price
         if target_price_algorithm == 'adjusted_feed_price':
-            # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg321707#msg321707
-            adjusted_price = settlement_price * (1 + premium)
+            # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg322091#msg322091
+            adjustment_scale = self.assetconf(symbol, "target_price_adjustment_scale")
+            adjusted_price = settlement_price * (1 + premium * adjustment_scale)
         elif target_price_algorithm == 'adjusted_real_price_empowered':
             # Kudos to Abit: https://bitsharestalk.org/index.php?topic=26315.msg321699#msg321699
             # Kudos to gghi: https://bitsharestalk.org/index.php?topic=26839.msg321863#msg321863

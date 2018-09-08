@@ -189,12 +189,20 @@ assets:
         # One of:
         #   
         #   - 'adjusted_feed_price':  
-        #        formula: settlement_price * (1 + premium)
-        #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321707#msg321707
+        #        formula: settlement_price * (1 + premium * adjustment_scale)
+        #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg322091#msg322091
+        #        mandatory additional settings: 
+        #          - `target_price_adjustment_scale`: arbitrary adjustment to apply, 
+        #                 acceptable value are between 0.8 and 1.2.
         #
         #   - 'adjusted_real_price_empowered': 
-        #        formula: real_price * pow(1 + premium, 1.8)
+        #        formula: real_price * pow(1 + premium + theorical_premium, acceleration_factor)
         #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321699#msg321699
+        #        mandatory additional settings: 
+        #          - `target_price_theorical_premium`: acceptable premium, 
+        #                a neutral price will be send when premium is equal to this. Ex: 0.02 .
+        #          - `target_price_acceleration_factor`: exponential factor to increase adjustment impact.
+        #                Acceptable values are between 1.5 and 4.
         # 
         #   - 'adjusted_dex_price_using_buckets':
         #        formula: dex_price * (1 + (K * (premium * 100))) 
