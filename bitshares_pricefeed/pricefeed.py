@@ -414,7 +414,7 @@ class Feed(object):
 
         (premium, target_price) = self.compute_target_price(symbol, backing_symbol, p)
 
-        cer = self.get_cer(symbol, p)
+        cer = self.get_cer(symbol, target_price)
 
         # price conversion to "price for one symbol" i.e.  base=*, quote=symbol
         self.price_result[symbol] = {
