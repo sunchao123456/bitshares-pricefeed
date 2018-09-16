@@ -28,8 +28,6 @@ def weighted_std(values, weights):
 
 class Feed(object):
     feed = {}
-    price = {}
-    volume = {}
     price_result = {}
 
     def __init__(self, config):
@@ -250,26 +248,24 @@ class Feed(object):
                             sources=[self.get_source_description(datasource, quote, base, feed_data)]
                         )
 
-    def derive2Markets(self, asset, target_symbol):
+    def derive2Markets(self, base_symbol, target_symbol):
         """ derive BTS prices for all assets in assets_derive
             This loop adds prices going via 2 markets:
             E.g.: CNY:BTC -> BTC:BTS = CNY:BTS
             I.e.: BTS: interasset -> interasset: targetasset
         """
-        symbol = asset["symbol"]
-
         for interasset in self.config.get("intermediate_assets", []):
-            if interasset == symbol:
+            if interasset == base_symbol:
                 continue
-            if interasset not in self.data[symbol]:
+            if interasset not in self.data[base_symbol]:
                 continue
-            for ratio in self.data[symbol][interasset]:
+            for ratio in self.data[base_symbol][interasset]:
                 if interasset in self.data and target_symbol in self.data[interasset]:
                     for idx in range(0, len(self.data[interasset][target_symbol])):
                         if self.data[interasset][target_symbol][idx]["volume"] == 0:
                             continue
                         self.addPrice(
-                            symbol,
+                            base_symbol,
                             target_symbol,
                             float(self.data[interasset][target_symbol][idx]["price"] * ratio["price"]),
                             float(self.data[interasset][target_symbol][idx]["volume"]),
@@ -279,27 +275,25 @@ class Feed(object):
                             ]
                         )
 
-    def derive3Markets(self, asset, target_symbol):
+    def derive3Markets(self, base_symbol, target_symbol):
         """ derive BTS prices for all assets in assets_derive
             This loop adds prices going via 3 markets:
             E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
             I.e.: BTS: interassetA -> interassetA: interassetB -> symbol: interassetB
         """
-        symbol = asset["symbol"]
-
         if "intermediate_assets" not in self.config or not self.config["intermediate_assets"]:
             return
 
-        if self.assetconf(symbol, "derive_across_3markets"):
+        if self.assetconf(base_symbol, "derive_across_3markets"):
             for interassetA in self.config["intermediate_assets"]:
                 for interassetB in self.config["intermediate_assets"]:
-                    if interassetB == symbol or interassetA == symbol or interassetA == interassetB:
+                    if interassetB == base_symbol or interassetA == base_symbol or interassetA == interassetB:
                         continue
-                    if interassetA not in self.data[interassetB] or interassetB not in self.data[symbol]:
+                    if interassetA not in self.data[interassetB] or interassetB not in self.data[base_symbol]:
                         continue
 
                     for ratioA in self.data[interassetB][interassetA]:
-                        for ratioB in self.data[symbol][interassetB]:
+                        for ratioB in self.data[base_symbol][interassetB]:
                             if (
                                 interassetA not in self.data or
                                 target_symbol not in self.data[interassetA]
@@ -308,9 +302,9 @@ class Feed(object):
                             for idx in range(0, len(self.data[interassetA][target_symbol])):
                                 if self.data[interassetA][target_symbol][idx]["volume"] == 0:
                                     continue
-                                log.info("derive_across_3markets - found %s -> %s -> %s -> %s", symbol, interassetB, interassetA, target_symbol)
+                                log.info("derive_across_3markets - found %s -> %s -> %s -> %s", base_symbol, interassetB, interassetA, target_symbol)
                                 self.addPrice(
-                                    symbol,
+                                    base_symbol,
                                     target_symbol,
                                     float(self.data[interassetA][target_symbol][idx]["price"] * ratioA["price"] * ratioB["price"]),
                                     float(self.data[interassetA][target_symbol][idx]["volume"]),
@@ -320,13 +314,28 @@ class Feed(object):
                                         self.data[interassetA][target_symbol][idx]["sources"]
                                     ]
                                 )
+
+    def get_premium_details(self, smartcoin_symbol, realcoin_symbol, dex_price):
+        details = {
+            "dex_price": dex_price
+        }
+
+        if smartcoin_symbol in self.data:
+            self.derive2Markets(smartcoin_symbol, realcoin_symbol)
+            if realcoin_symbol in self.data[smartcoin_symbol]:
+                details['alternative'] = self.data[smartcoin_symbol][realcoin_symbol]
+        
+        return details
+
     
     # Cf BSIP-42: https://github.com/bitshares/bsips/blob/master/bsip-0042.md
     def compute_target_price(self, symbol, backing_symbol, real_price):
+        
         ticker = Market("%s:%s" % (backing_symbol, symbol)).ticker()
         dex_price = float(ticker["latest"])
         settlement_price = float(ticker['baseSettlement_price'])
         premium = (real_price / dex_price) - 1
+        details = self.get_premium_details('BIT{}'.format(symbol), symbol, dex_price)
 
         target_price_algorithm = self.assetconf(symbol, "target_price_algorithm", no_fail=True)
         
@@ -351,7 +360,7 @@ class Feed(object):
                 else:
                     adjusted_price = dex_price * (1 + (4 * premium)) 
 
-        return (premium, adjusted_price)
+        return (premium, adjusted_price, details)
 
 
 
@@ -372,8 +381,8 @@ class Feed(object):
         # Fill in self.data
         self.appendOriginalPrices(symbol)
         log.info("Computed data (raw): \n{}".format(self.data))
-        self.derive2Markets(asset, backing_symbol)
-        self.derive3Markets(asset, backing_symbol)
+        self.derive2Markets(symbol, backing_symbol)
+        self.derive3Markets(symbol, backing_symbol)
         log.info("Computed data (after derivation): \n{}".format(self.data))
 
         if symbol not in self.data:
@@ -412,7 +421,7 @@ class Feed(object):
                 metric
             ))
 
-        (premium, target_price) = self.compute_target_price(symbol, backing_symbol, p)
+        (premium, target_price, details) = self.compute_target_price(symbol, backing_symbol, p)
 
         cer = self.get_cer(symbol, target_price)
 
@@ -430,7 +439,8 @@ class Feed(object):
             "short_backing_symbol": backing_symbol,
             "mssr": self.assetconf(symbol, "maximum_short_squeeze_ratio"),
             "mcr": self.assetconf(symbol, "maintenance_collateral_ratio"),
-            "log": self.data
+            "log": self.data,
+            "premium_details": details
         }
 
     def derive(self, assets_derive=set()):

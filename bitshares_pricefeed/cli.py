@@ -19,6 +19,7 @@ from .ui import (
     configfile,
     print_log,
     print_prices,
+    print_premium_details,
     confirmwarning,
     confirmalert,
     alert,
@@ -173,6 +174,7 @@ def update(ctx, assets, dry_run, confirm_warning, skip_critical):
     prices = feed.get_prices()
     print_log(prices)
     print_prices(prices)
+    print_premium_details(prices)
 
     if dry_run:
         return
