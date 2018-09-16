@@ -70,3 +70,4 @@ bitshares
 tests/api_keys.sh
 wrappers_env
 config
+pid_historic_values.json
