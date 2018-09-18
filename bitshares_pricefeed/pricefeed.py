@@ -375,6 +375,7 @@ class Feed(object):
                     adjusted_price = dex_price * (1 + (4 * premium)) 
         elif target_price_algorithm=="gugu":
             print("\033[1;31;40mmagicwallet for CNY\033[0m") 
+            print(self.feed["magicwallet"])
             print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
             print("\033[1;31;40当前价格%s\033[0m" % str(1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])))
             print("计算C")
@@ -458,7 +459,8 @@ class Feed(object):
             conn.close()
             print('OK')
             adjusted_price=CNY
-        return (premium, adjusted_price)
+        
+        return (premium, adjusted_price,details)
 
 
 
