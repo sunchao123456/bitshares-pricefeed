@@ -126,8 +126,13 @@ exchanges:
             - BTC
             - USDT
             - QC
-        aliases:
-            QC: CNY
+    qc_fees:
+        klass: Manual
+        feed:
+          QC:
+            CNY:
+              price: 0.995
+              volume: 1.0
     magicwallet:
         klass: MagicWallet
         api_key: 
@@ -207,6 +212,26 @@ assets:
         #   - 'adjusted_dex_price_using_buckets':
         #        formula: dex_price * (1 + (K * (premium * 100))) 
         #        discussion: https://bitsharestalk.org/index.php?topic=26315.msg321713#msg321713
+        #
+        #   - 'pid':
+        #        forumla: dex_price * pid_adjustment
+        #        discussion: https://bitsharestalk.org/index.php?topic=26278.msg322246#msg322246
+        #        mandatory additional settings:
+        #          - `target_price_pid_proportional_factor`: factor for the proportinal part of the PID adjustment;
+        #               it scales the premium adjustment. 
+        #          - `target_price_pid_integral_factor`: factor for the integral part of the PID adjustment;
+        #               it impacts how fast the adjustment will accumulate over time. 
+        #          - `target_price_pid_derivative_factor`: factor for the derivative part of the PID adjustment;
+        #               it impacts how strong is the curve direction will change the adjustment. 
+        #          - `target_price_pid_safe_upward_feed_change`: feed price will never move more that this ratio when the curve is upward;
+        #               used to avoid big feed prices moves.
+        #          - `target_price_pid_safe_downward_feed_change`: feed price will never move more that this ratio when the curve is downward;
+        #               used to avoid big feed prices moves.
+        #           - `target_price_pid_historic_value_file`: file path where to store past values that will be used in the next run.
+        #        optional additional settings:
+        #           - `target_price_pid_integral_adjustment_max`: max value for integral part of the PID adjustment. 
+        #           - `target_price_pid_integral_adjustment_min`: min value for integral part of the PID adjustment. 
+
         target_price_algorithm: 'adjusted_dex_price_using_buckets' 
 
 # Intermediate assets are useful for 2 and 3 market price derivation

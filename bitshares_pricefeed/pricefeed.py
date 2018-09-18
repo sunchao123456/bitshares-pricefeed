@@ -2,6 +2,8 @@ import statistics
 import numpy as num
 import psycopg2
 import time
+import json
+import os.path
 from math import fabs, sqrt
 from bitshares.instance import shared_bitshares_instance
 from bitshares.account import Account
@@ -30,8 +32,6 @@ def weighted_std(values, weights):
 
 class Feed(object):
     feed = {}
-    price = {}
-    volume = {}
     price_result = {}
 
     def __init__(self, config):
@@ -252,26 +252,24 @@ class Feed(object):
                             sources=[self.get_source_description(datasource, quote, base, feed_data)]
                         )
 
-    def derive2Markets(self, asset, target_symbol):
+    def derive2Markets(self, base_symbol, target_symbol):
         """ derive BTS prices for all assets in assets_derive
             This loop adds prices going via 2 markets:
             E.g.: CNY:BTC -> BTC:BTS = CNY:BTS
             I.e.: BTS: interasset -> interasset: targetasset
         """
-        symbol = asset["symbol"]
-
         for interasset in self.config.get("intermediate_assets", []):
-            if interasset == symbol:
+            if interasset == base_symbol:
                 continue
-            if interasset not in self.data[symbol]:
+            if interasset not in self.data[base_symbol]:
                 continue
-            for ratio in self.data[symbol][interasset]:
+            for ratio in self.data[base_symbol][interasset]:
                 if interasset in self.data and target_symbol in self.data[interasset]:
                     for idx in range(0, len(self.data[interasset][target_symbol])):
                         if self.data[interasset][target_symbol][idx]["volume"] == 0:
                             continue
                         self.addPrice(
-                            symbol,
+                            base_symbol,
                             target_symbol,
                             float(self.data[interasset][target_symbol][idx]["price"] * ratio["price"]),
                             float(self.data[interasset][target_symbol][idx]["volume"]),
@@ -281,27 +279,25 @@ class Feed(object):
                             ]
                         )
 
-    def derive3Markets(self, asset, target_symbol):
+    def derive3Markets(self, base_symbol, target_symbol):
         """ derive BTS prices for all assets in assets_derive
             This loop adds prices going via 3 markets:
             E.g.: GOLD:USD -> USD:BTC -> BTC:BTS = GOLD:BTS
             I.e.: BTS: interassetA -> interassetA: interassetB -> symbol: interassetB
         """
-        symbol = asset["symbol"]
-
         if "intermediate_assets" not in self.config or not self.config["intermediate_assets"]:
             return
 
-        if self.assetconf(symbol, "derive_across_3markets"):
+        if self.assetconf(base_symbol, "derive_across_3markets"):
             for interassetA in self.config["intermediate_assets"]:
                 for interassetB in self.config["intermediate_assets"]:
-                    if interassetB == symbol or interassetA == symbol or interassetA == interassetB:
+                    if interassetB == base_symbol or interassetA == base_symbol or interassetA == interassetB:
                         continue
-                    if interassetA not in self.data[interassetB] or interassetB not in self.data[symbol]:
+                    if interassetA not in self.data[interassetB] or interassetB not in self.data[base_symbol]:
                         continue
 
                     for ratioA in self.data[interassetB][interassetA]:
-                        for ratioB in self.data[symbol][interassetB]:
+                        for ratioB in self.data[base_symbol][interassetB]:
                             if (
                                 interassetA not in self.data or
                                 target_symbol not in self.data[interassetA]
@@ -310,9 +306,9 @@ class Feed(object):
                             for idx in range(0, len(self.data[interassetA][target_symbol])):
                                 if self.data[interassetA][target_symbol][idx]["volume"] == 0:
                                     continue
-                                log.info("derive_across_3markets - found %s -> %s -> %s -> %s", symbol, interassetB, interassetA, target_symbol)
+                                log.info("derive_across_3markets - found %s -> %s -> %s -> %s", base_symbol, interassetB, interassetA, target_symbol)
                                 self.addPrice(
-                                    symbol,
+                                    base_symbol,
                                     target_symbol,
                                     float(self.data[interassetA][target_symbol][idx]["price"] * ratioA["price"] * ratioB["price"]),
                                     float(self.data[interassetA][target_symbol][idx]["volume"]),
@@ -322,13 +318,38 @@ class Feed(object):
                                         self.data[interassetA][target_symbol][idx]["sources"]
                                     ]
                                 )
+
+    def get_premium_details(self, smartcoin_symbol, realcoin_symbol, dex_price):
+        details = {
+            "dex_price": dex_price
+        }
+
+        if smartcoin_symbol in self.data:
+            self.derive2Markets(smartcoin_symbol, realcoin_symbol)
+            if realcoin_symbol in self.data[smartcoin_symbol]:
+                details['alternative'] = self.data[smartcoin_symbol][realcoin_symbol]
+        
+        return details
+
+    def load_previous_pid_data(self, historic_file):
+        if historic_file and not os.path.exists(historic_file):
+            return None
+
+        with open(historic_file) as f:
+            return json.load(f)
+
+    def save_pid_data(self, historic_file, premium, i):
+        with open(historic_file, 'w') as outfile:
+            json.dump({'premium': premium, 'i': i}, outfile)
     
     # Cf BSIP-42: https://github.com/bitshares/bsips/blob/master/bsip-0042.md
     def compute_target_price(self, symbol, backing_symbol, real_price):
+        
         ticker = Market("%s:%s" % (backing_symbol, symbol)).ticker()
         dex_price = float(ticker["latest"])
         settlement_price = float(ticker['baseSettlement_price'])
         premium = (real_price / dex_price) - 1
+        details = self.get_premium_details('BIT{}'.format(symbol), symbol, dex_price)
 
         target_price_algorithm = self.assetconf(symbol, "target_price_algorithm", no_fail=True)
         
@@ -344,7 +365,7 @@ class Feed(object):
             acceleration_factor = self.assetconf(symbol, "target_price_acceleration_factor")
             adjusted_price = real_price * pow(1 + premium + theorical_premium, acceleration_factor)
         elif target_price_algorithm == 'adjusted_dex_price_using_buckets':
-            # Kudos to GDEX: https://bitsharestalk.org/index.php?topic=26315.msg321931#msg321931
+            # Kudos to GDEX/Bitcrab: https://bitsharestalk.org/index.php?topic=26315.msg321931#msg321931
             if premium > 0:
                 if premium <= 0.01:
                     adjusted_price = dex_price * (1 + (0.096 * (premium * 100))) 
@@ -352,6 +373,7 @@ class Feed(object):
                     adjusted_price = dex_price * 1.096
                 else:
                     adjusted_price = dex_price * (1 + (4 * premium)) 
+<<<<<<< HEAD
         elif target_price_algorithm=="gugu":
             print("\033[1;31;40mmagicwallet for CNY\033[0m") 
             print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
@@ -438,6 +460,54 @@ class Feed(object):
             print('OK')
             adjusted_price=CNY
         return (premium, adjusted_price)
+=======
+        elif target_price_algorithm == 'pid':
+            # Kudos to GDEX/Bitcrab: https://bitsharestalk.org/index.php?topic=26278.msg322246#msg322246
+            proportional_factor = self.assetconf(symbol, "target_price_pid_proportional_factor")
+            integral_factor = self.assetconf(symbol, "target_price_pid_integral_factor")
+            derivative_factor = self.assetconf(symbol, "target_price_pid_derivative_factor")
+            safe_upward_feed_change = self.assetconf(symbol, "target_price_pid_safe_upward_feed_change")
+            safe_downward_feed_change = self.assetconf(symbol, "target_price_pid_safe_downward_feed_change")
+
+            integral_adjustment_max = self.assetconf(symbol, "target_price_pid_integral_adjustment_max", no_fail=True)
+            integral_adjustment_min = self.assetconf(symbol, "target_price_pid_integral_adjustment_min", no_fail=True)
+
+            historic_file = self.assetconf(symbol, "target_price_pid_historic_value_file")
+            previous_data = self.load_previous_pid_data(historic_file)
+
+            p = proportional_factor * premium
+            if previous_data:
+                i = previous_data['i'] + (premium / integral_factor)
+                d = derivative_factor * (premium - previous_data['premium'])
+            else:
+                # Initial values aim for adjusted_price = real_price when premium = 0.
+                i = settlement_price / real_price - 1 - p
+                d = 0
+
+            # Optionaly sets limits to i.
+            if integral_adjustment_max and i > integral_adjustment_max:
+                i = integral_adjustment_max
+            if integral_adjustment_min and i < integral_adjustment_min:
+                i = integral_adjustment_min
+
+            pid_adjustment = 1 + p + i + d
+            if pid_adjustment > 1:
+               safe_max_adjustment = 1.5 # Do not adjust dex price with more than 50%.
+               safe_feed_adjustment =  safe_upward_feed_change * settlement_price / real_price # To avoid price jumps.
+               adjustement = min(pid_adjustment, safe_max_adjustment, safe_feed_adjustment)
+               adjusted_price = dex_price * adjustement 
+            else:
+               safe_feed_adjustment =  safe_downward_feed_change * settlement_price / real_price # To avoid price jumps.
+               adjustment = max(pid_adjustment, safe_feed_adjustment)
+               adjusted_price = dex_price * adjustment
+            
+
+            print('{} PID info: adjustment={}, pid={} (p={}, i={}, d={}), safe={}'.format(symbol, adjustement, pid_adjustment, p, i, d, safe_feed_adjustment))
+            self.save_pid_data(historic_file, premium, i)
+
+
+        return (premium, adjusted_price, details)
+>>>>>>> 2993671147664a7fe822c7d361b3cb7041e7af5f
 
 
 
@@ -458,8 +528,8 @@ class Feed(object):
         # Fill in self.data
         self.appendOriginalPrices(symbol)
         log.info("Computed data (raw): \n{}".format(self.data))
-        self.derive2Markets(asset, backing_symbol)
-        self.derive3Markets(asset, backing_symbol)
+        self.derive2Markets(symbol, backing_symbol)
+        self.derive3Markets(symbol, backing_symbol)
         log.info("Computed data (after derivation): \n{}".format(self.data))
 
         if symbol not in self.data:
@@ -498,9 +568,9 @@ class Feed(object):
                 metric
             ))
 
-        (premium, target_price) = self.compute_target_price(symbol, backing_symbol, p)
+        (premium, target_price, details) = self.compute_target_price(symbol, backing_symbol, p)
 
-        cer = self.get_cer(symbol, p)
+        cer = self.get_cer(symbol, target_price)
 
         # price conversion to "price for one symbol" i.e.  base=*, quote=symbol
         self.price_result[symbol] = {
@@ -516,7 +586,8 @@ class Feed(object):
             "short_backing_symbol": backing_symbol,
             "mssr": self.assetconf(symbol, "maximum_short_squeeze_ratio"),
             "mcr": self.assetconf(symbol, "maintenance_collateral_ratio"),
-            "log": self.data
+            "log": self.data,
+            "premium_details": details
         }
 
     def derive(self, assets_derive=set()):

@@ -79,6 +79,18 @@ def print_log(feeds):
             ])
     print(t.get_string())
 
+def print_premium_details(feeds):
+    for symbol, feed in feeds.items():
+        if not feed:
+            continue
+        print('Premium details for {}:'.format(symbol))
+        print('  BIT{}/BTS (on DEX): {} ({})'.
+            format(symbol, formatPrice(feed['premium_details']['dex_price']), \
+                   priceChange(feed['premium_details']['dex_price'], feed["unadjusted_price"])))
+        if 'alternative' in feed['premium_details']:
+            print('  BIT{}/{} (alternative premiums):'.format(symbol, symbol))
+            for alt in feed['premium_details']['alternative']:
+                print('    - {} : {} ({})'.format(alt['sources'], formatPrice(alt['price']), priceChange(alt['price'], 1)))
 
 def print_prices(feeds):
     t = PrettyTable([
