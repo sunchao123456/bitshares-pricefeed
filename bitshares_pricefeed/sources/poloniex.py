@@ -36,4 +36,5 @@ class PoloniexVWAP(FeedSource):
                 result = response.json()
                 vwap = result[-1]
                 self.add_rate(feed, base, quote, vwap["weightedAverage"], vwap["quoteVolume"])
+        print(feed)
         return feed

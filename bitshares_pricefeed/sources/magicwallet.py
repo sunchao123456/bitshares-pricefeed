@@ -26,7 +26,7 @@ class MagicWallet(FeedSource):
                 return (round((dfiatcny + wfiatcny) / (dbitcny + wbitcny), 4), dcount + wcount)
         raise Exception("Invalid period {}, should be one of: ".format(period, self.valid_periods))
 
-    def _fetch(self):
+    def _fetch(self): 
         feed = {}
         if self.bases and ( len(self.bases) != 1 or (self.bases[0] != 'CNY' and self.bases[0] != 'BITCNY')):
             raise Exception("MagicWallet only supports BITCNY/CNY pair.")

@@ -12,7 +12,7 @@ class Quandl(FeedSource):  # Quandl using Python API client
         quandl.ApiConfig.api_key = self.api_key
         quandl.ApiConfig.api_version = '2015-04-09'
 
-    def _fetch(self):
+    def _fetch(self): 
         feed = {}
         for market in self.datasets:
             quote, base = market.split(":")

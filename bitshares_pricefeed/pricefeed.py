@@ -1,5 +1,6 @@
 import statistics
 import numpy as num
+import psycopg2
 import time
 from math import fabs, sqrt
 from bitshares.instance import shared_bitshares_instance
@@ -11,6 +12,7 @@ from bitshares.market import Market
 from bitshares.witness import Witness
 from bitshares.exceptions import AccountDoesNotExistsException
 from datetime import datetime, date, timezone
+from dateutil.parser import parse
 from . import sources
 import logging
 log = logging.getLogger(__name__)
@@ -350,7 +352,91 @@ class Feed(object):
                     adjusted_price = dex_price * 1.096
                 else:
                     adjusted_price = dex_price * (1 + (4 * premium)) 
+        elif target_price_algorithm=="gugu":
+            print("\033[1;31;40mmagicwallet for CNY\033[0m") 
+            print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+            print("\033[1;31;40当前价格%s\033[0m" % str(1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])))
+            print("计算C")
+            market = Market("BTS:CNY")
+            c=market.ticker()['baseSettlement_price']/market.ticker()['latest']
+            print("\033[1;31; 当前C%s\033[0m" %  str(c))
+            print("获取数据库数据")
+            conn = psycopg2.connect(database=self.config["database"]["dbname"], user=self.config["database"]["dbuser"], password=self.config["database"]["dbpwd"], host=self.config["database"]["dbhost"], port=self.config["database"]["dbport"])
+            CNY=1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])
+            mrate=float(self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+            mrate_old=0
+            crate=1
+            cur_mrate = conn.cursor()
+            cur_mrate.execute("SELECT value from magicwalletrate order by createdate desc limit 1")
+            rows_mrate=cur_mrate.fetchall()
+            if rows_mrate==[]:
+                cur_mrate.execute("INSERT INTO magicwalletrate(id,value) VALUES(1,'"+str(mrate)+"')")
+                conn.commit()
+            else:
+                for row in rows_mrate:
+                    mrate_old=float(row[0])
+                cur_mrate.execute("UPDATE magicwalletrate set value='"+str(mrate)+"' where id=1")
+                conn.commit()
+            
+            upline=0
+            lowline=0
+            cur2=conn.cursor()
+            cur2.execute("SELECT id, name, value from params")
+            prows = cur2.fetchall()
+            for row in prows:
+                if row[1]=='upline':
+                    upline=row[2]
+                elif row[1]=='lowline':
+                    lowline=row[2]
+            if mrate_old==0:
+                crate=1
+            elif 0.99<mrate<1.01:
+                crate=1
+            elif mrate>mrate_old:
+                if mrate>1:
+                    crate=1+upline
+                else:
+                    crate=1-lowline
+            else:
+                if mrate>1:
+                    crate=1+lowline
+                else:
+                    crate=1-upline
+            print("\033[1;31;当前Crate%s\033[0m" %  crate)
 
+            cdatetime=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
+            cur=conn.cursor()
+            cur.execute("SELECT id, cvalue,mrate ,createdate from record order by createdate desc limit 2")
+            rows = cur.fetchall()
+            if rows==[]:
+                c=c*crate
+            else :
+                c=float(rows[0][1])
+                c=c*crate
+                cdatetime=rows[0][3].strftime('%Y-%m-%d %H:%M:%S') 
+            
+            if c > self.config["flaghigh"]:
+                c=self.config["flaghigh"]
+            elif c<self.config["flaglow"]:
+                c=self.config["flaglow"]
+            print("\033[1;31;最终C%s\033[0m" %  str(c))
+
+            CNY=CNY*c
+            print("\033[1;31;最终CNY喂价%s\033[0m" %  str(CNY))
+            sqlinsert="INSERT INTO record (btsprice, feedprice, cvalue,mrate,myfeedprice) \
+            VALUES ('"+str(market.ticker()['latest'])+"','"+str(market.ticker()['baseSettlement_price'])+"','"+str(market.ticker()['baseSettlement_price']/market.ticker()['latest'])+"','"+str(mrate)+"','"+str(CNY)+"')"
+            print('timedis')
+            print((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60))
+            if self.config["changehour"]<((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60)):
+                cur.execute(sqlinsert)
+                conn.commit()
+            elif rows==[]:
+                cur.execute(sqlinsert)
+                conn.commit()
+
+            conn.close()
+            print('OK')
+            adjusted_price=CNY
         return (premium, adjusted_price)
 
 

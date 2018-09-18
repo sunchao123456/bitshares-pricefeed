@@ -7,7 +7,7 @@ class CurrencyLayer(FeedSource):  # Hourly updated data over http with free subs
         if not hasattr(self, "api_key") or not hasattr(self, "free_subscription"):
             raise Exception("CurrencyLayer FeedSource requires 'api_key' and 'free_subscription'")
 
-    def _fetch(self):
+    def _fetch(self): 
         feed = {}
         for base in self.bases:
             url = "http://apilayer.net/api/live?access_key=%s&currencies=%s&source=%s&format=1" % (self.api_key, ",".join(self.quotes), base)

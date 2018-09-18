@@ -32,3 +32,4 @@ from .cointiger import CoinTiger
 from .magicwallet import MagicWallet
 from .hertz import Hertz
 from .hero import Hero
+from .sina import Sina
