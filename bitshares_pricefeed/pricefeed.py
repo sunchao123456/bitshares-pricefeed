@@ -373,7 +373,6 @@ class Feed(object):
                     adjusted_price = dex_price * 1.096
                 else:
                     adjusted_price = dex_price * (1 + (4 * premium)) 
-<<<<<<< HEAD
         elif target_price_algorithm=="gugu":
             print("\033[1;31;40mmagicwallet for CNY\033[0m") 
             print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
@@ -460,54 +459,6 @@ class Feed(object):
             print('OK')
             adjusted_price=CNY
         return (premium, adjusted_price)
-=======
-        elif target_price_algorithm == 'pid':
-            # Kudos to GDEX/Bitcrab: https://bitsharestalk.org/index.php?topic=26278.msg322246#msg322246
-            proportional_factor = self.assetconf(symbol, "target_price_pid_proportional_factor")
-            integral_factor = self.assetconf(symbol, "target_price_pid_integral_factor")
-            derivative_factor = self.assetconf(symbol, "target_price_pid_derivative_factor")
-            safe_upward_feed_change = self.assetconf(symbol, "target_price_pid_safe_upward_feed_change")
-            safe_downward_feed_change = self.assetconf(symbol, "target_price_pid_safe_downward_feed_change")
-
-            integral_adjustment_max = self.assetconf(symbol, "target_price_pid_integral_adjustment_max", no_fail=True)
-            integral_adjustment_min = self.assetconf(symbol, "target_price_pid_integral_adjustment_min", no_fail=True)
-
-            historic_file = self.assetconf(symbol, "target_price_pid_historic_value_file")
-            previous_data = self.load_previous_pid_data(historic_file)
-
-            p = proportional_factor * premium
-            if previous_data:
-                i = previous_data['i'] + (premium / integral_factor)
-                d = derivative_factor * (premium - previous_data['premium'])
-            else:
-                # Initial values aim for adjusted_price = real_price when premium = 0.
-                i = settlement_price / real_price - 1 - p
-                d = 0
-
-            # Optionaly sets limits to i.
-            if integral_adjustment_max and i > integral_adjustment_max:
-                i = integral_adjustment_max
-            if integral_adjustment_min and i < integral_adjustment_min:
-                i = integral_adjustment_min
-
-            pid_adjustment = 1 + p + i + d
-            if pid_adjustment > 1:
-               safe_max_adjustment = 1.5 # Do not adjust dex price with more than 50%.
-               safe_feed_adjustment =  safe_upward_feed_change * settlement_price / real_price # To avoid price jumps.
-               adjustement = min(pid_adjustment, safe_max_adjustment, safe_feed_adjustment)
-               adjusted_price = dex_price * adjustement 
-            else:
-               safe_feed_adjustment =  safe_downward_feed_change * settlement_price / real_price # To avoid price jumps.
-               adjustment = max(pid_adjustment, safe_feed_adjustment)
-               adjusted_price = dex_price * adjustment
-            
-
-            print('{} PID info: adjustment={}, pid={} (p={}, i={}, d={}), safe={}'.format(symbol, adjustement, pid_adjustment, p, i, d, safe_feed_adjustment))
-            self.save_pid_data(historic_file, premium, i)
-
-
-        return (premium, adjusted_price, details)
->>>>>>> 2993671147664a7fe822c7d361b3cb7041e7af5f
 
 
 
