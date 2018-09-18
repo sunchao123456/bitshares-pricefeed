@@ -376,7 +376,13 @@ class Feed(object):
         elif target_price_algorithm=="gugu":
             print("\033[1;31;40mmagicwallet for CNY\033[0m") 
             print(self.feed["magicwallet"])
-            print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+            if self.feed["magicwallet"]=={}:
+                mrate=1
+                print("\033[1;31;40充提手续费率%s\033[0m" % "1")
+            else:
+                mrate=float(self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+                print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+            
             print("\033[1;31;40当前价格%s\033[0m" % str(1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])))
             print("计算C")
             market = Market("BTS:CNY")
@@ -385,7 +391,7 @@ class Feed(object):
             print("获取数据库数据")
             conn = psycopg2.connect(database=self.config["database"]["dbname"], user=self.config["database"]["dbuser"], password=self.config["database"]["dbpwd"], host=self.config["database"]["dbhost"], port=self.config["database"]["dbport"])
             CNY=1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])
-            mrate=float(self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+            
             mrate_old=0
             crate=1
             cur_mrate = conn.cursor()
