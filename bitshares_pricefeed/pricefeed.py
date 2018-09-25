@@ -13,7 +13,7 @@ from bitshares.amount import Amount
 from bitshares.market import Market
 from bitshares.witness import Witness
 from bitshares.exceptions import AccountDoesNotExistsException
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 from dateutil.parser import parse
 from . import sources
 import logging
@@ -416,32 +416,47 @@ class Feed(object):
                     upline=row[2]
                 elif row[1]=='lowline':
                     lowline=row[2]
+            cdatetime=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
+            cur=conn.cursor()
+            enddate=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()) 
+            startdate = (datetime.now()+ timedelta(hours=-1)).strftime('%Y-%m-%d %H:%M:%S')    
+            where=" where createdate>'"+startdate+"' and createdate<'"+enddate+"'"
+            sql="SELECT max(cvalue) from record "+where
+            if mrate<1:
+                sql="SELECT min(cvalue) from record "+where
+            else:
+                sql="SELECT max(cvalue) from record "+where
+
             if mrate_old==0:
                 crate=1
             elif 0.99<mrate<1.01:
-                crate=1
-            elif mrate>mrate_old:
+                if mrate<1:
+                    crate=1-self.config["vblacne"]
+                else:
+                    crate=1+self.config["vblacne"]
+            elif mrate>mrate_old: 
                 if mrate>1:
                     crate=1+upline
                 else:
                     crate=1-lowline
-            else:
+            else: 
                 if mrate>1:
                     crate=1+lowline
                 else:
                     crate=1-upline
             print("\033[1;31;当前Crate%s\033[0m" %  crate)
+            print(sql)
 
-            cdatetime=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
-            cur=conn.cursor()
-            cur.execute("SELECT id, cvalue,mrate ,createdate from record order by createdate desc limit 2")
+            
+            cur.execute(sql)
             rows = cur.fetchall()
-            if rows==[]:
+            print(rows[0][0])
+            if rows==[] or rows[0][0]==None:
                 c=c*crate
             else :
-                c=float(rows[0][1])
+                c=float(rows[0][0])
                 c=c*crate
-                cdatetime=rows[0][3].strftime('%Y-%m-%d %H:%M:%S') 
+                #cdatetime=rows[0][3].strftime('%Y-%m-%d %H:%M:%S') 
             
             if c > self.config["flaghigh"]:
                 c=self.config["flaghigh"]
@@ -453,14 +468,11 @@ class Feed(object):
             print("\033[1;31;最终CNY喂价%s\033[0m" %  str(CNY))
             sqlinsert="INSERT INTO record (btsprice, feedprice, cvalue,mrate,myfeedprice) \
             VALUES ('"+str(market.ticker()['latest'])+"','"+str(market.ticker()['baseSettlement_price'])+"','"+str(market.ticker()['baseSettlement_price']/market.ticker()['latest'])+"','"+str(mrate)+"','"+str(CNY)+"')"
-            print('timedis')
-            print((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60))
-            if self.config["changehour"]<((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60)):
-                cur.execute(sqlinsert)
-                conn.commit()
-            elif rows==[]:
-                cur.execute(sqlinsert)
-                conn.commit()
+            #print('timedis')
+            #print((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60))
+            #if self.config["changehour"]<((parse(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()))- parse(cdatetime)).total_seconds()/(60*60)):
+            cur.execute(sqlinsert)
+            conn.commit()
 
             conn.close()
             print('OK')
