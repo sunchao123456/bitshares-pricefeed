@@ -378,16 +378,16 @@ class Feed(object):
             print(self.feed["magicwallet"])
             if self.feed["magicwallet"]=={}:
                 mrate=1
-                print("\033[1;31;40充提手续费率%s\033[0m" % "1")
+                print("\033[1;31;40m充提手续费率%s\033[0m" % "1")
             else:
                 mrate=float(self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
-                print("\033[1;31;40充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
+                print("\033[1;31;40m充提手续费率%s\033[0m" % self.feed["magicwallet"]["CNY"]["BITCNY"]["price"])
             
-            print("\033[1;31;40当前价格%s\033[0m" % str(1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])))
+            print("\033[1;31;40m当前价格%s\033[0m" % str(1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])))
             print("计算C")
             market = Market("BTS:CNY")
             c=market.ticker()['baseSettlement_price']/market.ticker()['latest']
-            print("\033[1;31; 当前C%s\033[0m" %  str(c))
+            print("\033[1;31;40m 当前C%s\033[0m" %  str(c))
             print("获取数据库数据")
             conn = psycopg2.connect(database=self.config["database"]["dbname"], user=self.config["database"]["dbuser"], password=self.config["database"]["dbpwd"], host=self.config["database"]["dbhost"], port=self.config["database"]["dbport"])
             CNY=1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])
@@ -444,7 +444,7 @@ class Feed(object):
                     crate=1+lowline
                 else:
                     crate=1-upline
-            print("\033[1;31;当前Crate%s\033[0m" %  crate)
+            print("\033[1;31;40m当前Crate%s\033[0m" %  crate)
             print(sql)
 
             
@@ -462,10 +462,10 @@ class Feed(object):
                 c=self.config["flaghigh"]
             elif c<self.config["flaglow"]:
                 c=self.config["flaglow"]
-            print("\033[1;31;最终C%s\033[0m" %  str(c))
+            print("\033[1;31;40m最终C%s\033[0m" %  str(c))
 
             CNY=CNY*c
-            print("\033[1;31;最终CNY喂价%s\033[0m" %  str(CNY))
+            print("\033[1;31;40m最终CNY喂价%s\033[0m" %  str(CNY))
             sqlinsert="INSERT INTO record (btsprice, feedprice, cvalue,mrate,myfeedprice) \
             VALUES ('"+str(market.ticker()['latest'])+"','"+str(market.ticker()['baseSettlement_price'])+"','"+str(market.ticker()['baseSettlement_price']/market.ticker()['latest'])+"','"+str(mrate)+"','"+str(CNY)+"')"
             #print('timedis')
@@ -477,7 +477,116 @@ class Feed(object):
             conn.close()
             print('OK')
             adjusted_price=CNY
-        
+        elif target_price_algorithm=="guguusd":
+            print("\033[1;32;40mmagicwallet for USD\033[0m")
+            market1 = Market("BTS:USD")
+            c=market1.ticker()['baseSettlement_price']/market1.ticker()['latest']
+            print("\033[1;32;40m 当前C%s\033[0m" %  str(c))
+
+            #get now rate
+            market = Market("BTS:CNY")
+            c2=float(str(market1.ticker()["latest"]).split(' ')[0])/float(str(market.ticker()["latest"]).split(' ')[0])
+ 
+            print("\033[1;32;40m 当前bitsharesUSDrate%s\033[0m" %  str(c2)) 
+            c_new=self.feed["sina"]["USD"]["CNY"]["price"]
+            print("\033[1;32;40m 当前CNYUSDrate%s\033[0m" %  str(c_new))
+            usdrate=c_new/c2
+            print("\033[1;33;40m 当前C%s\033[0m" %  str(usdrate))
+            print("\033[1;32;40m获取数据库数据\033[0m")
+            conn = psycopg2.connect(database=self.config["database"]["dbname"], user=self.config["database"]["dbuser"], password=self.config["database"]["dbpwd"], host=self.config["database"]["dbhost"], port=self.config["database"]["dbport"])
+            usdrate_old=0
+            
+            cur_mrate = conn.cursor()
+            cur_mrate.execute("SELECT value from usdrate order by createdate desc limit 1")
+            rows_mrate=cur_mrate.fetchall()
+            if rows_mrate==[]:
+                cur_mrate.execute("INSERT INTO usdrate(id,value) VALUES(1,'"+str(usdrate)+"')")
+                conn.commit()
+            else:
+                for row in rows_mrate:
+                    usdrate_old=float(row[0])
+                cur_mrate.execute("UPDATE usdrate set value='"+str(usdrate)+"' where id=1")
+                conn.commit()
+
+            upline=0
+            lowline=0
+            cur2=conn.cursor()
+            cur2.execute("SELECT id, name, value from params")
+            prows = cur2.fetchall()
+            for row in prows:
+                if row[1]=='upline':
+                    upline=float(row[2])
+                elif row[1]=='lowline':
+                    lowline=float(row[2])
+            crate=1
+
+            cdatetime=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
+            cur=conn.cursor()
+            enddate=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()) 
+            startdate = (datetime.now()+ timedelta(hours=-1)).strftime('%Y-%m-%d %H:%M:%S')    
+            where=" where createdate>'"+startdate+"' and createdate<'"+enddate+"'"
+            sql="SELECT max(cvalue) from recordusd "+where
+            if usdrate<1:
+                sql="SELECT min(cvalue) from recordusd "+where
+            else:
+                sql="SELECT max(cvalue) from recordusd "+where
+
+            if usdrate_old==0:
+                crate=1
+            elif 0.99<usdrate<1.01:
+                if usdrate<1:
+                    crate=1-self.config["vblacne"]
+                else:
+                    crate=1+self.config["vblacne"]
+            elif usdrate>usdrate_old: 
+                if usdrate>1:
+                    crate=1+upline
+                else:
+                    crate=1-lowline
+            else: 
+                if usdrate>1:
+                    crate=1+lowline
+                else:
+                    crate=1-upline
+            print("\033[1;31;40m当前Crate%s\033[0m" %  str(crate))
+            print(sql)
+
+            
+            cur.execute(sql)
+            rows = cur.fetchall()
+            print(rows[0][0])
+            if rows==[] or rows[0][0]==None:
+                c=c*crate
+            else :
+                c=float(rows[0][0])
+                c=c*crate
+                #cdatetime=rows[0][3].strftime('%Y-%m-%d %H:%M:%S') 
+            
+            if c > self.config["flaghigh"]:
+                c=self.config["flaghigh"]
+            elif c<self.config["flaglow"]:
+                c=self.config["flaglow"]
+            print("\033[1;32;40m最终C%s\033[0m" %  str(c))
+            
+
+
+
+            
+            USD=1/float(self.feed["bitshares"]["BTS"]["USD"]["price"])
+            USD=USD*c
+            print("\033[1;32;40m最终USD's feedprice%s\033[0m" % str(USD))
+            sqlinsert="INSERT INTO recordusd (btsprice, feedprice, cvalue,mrate,myfeedprice) \
+            VALUES ('"+str(market1.ticker()['latest'])+"','"+str(market1.ticker()['baseSettlement_price'])+"','"+str(market1.ticker()['baseSettlement_price']/market1.ticker()['latest'])+"','"+str(usdrate)+"','"+str(USD)+"')"
+            
+            cur.execute(sqlinsert)
+            conn.commit()
+
+            conn.close()
+            print('OK')
+            adjusted_price=USD
+            
+
+
         return (premium, adjusted_price,details)
 
 
