@@ -150,6 +150,7 @@ Graphene | OK | Crypto, FIAT, Stocks | No | last and volume (in quote currency) 
 Huobi | OK | Crypto | No | close price and volume (in quote currency) from CEX API in realtime
 IEX  | OK | Stocks | No | last ("IEX real time price", "15 minute delayed price", "Close" or "Previous close") and volume. 
 IndoDax | OK | Crypto | No | last and volume (in quote currency) from CEX ticker API.
+Kraken | OK | Crypto | No | last and volume (in quote currency) from CEX ticker API.
 LBank | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
 MagicWallet | OK | BITCNY/CNY | Yes | BITCNY/CNY ratio from deposti/withdraw on MagicWallet.
 OkCoin  | OK | Crypto | No | last and volume (in quote currency) from CEX API in realtime
