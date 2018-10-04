@@ -19,6 +19,9 @@ class Composite(FeedSource):
     def _extract_assets(self, feed):
         quotes = [ source.keys() for source in feed.values() ]
         quotes = set(itertools.chain.from_iterable(quotes)) # Flatten + uniq
+        # Remove special 'response' key.
+        if 'response' in quotes:
+            quotes.remove('response')
 
         bases = []
         for source in feed.values():
