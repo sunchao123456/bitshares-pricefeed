@@ -139,9 +139,9 @@ class Feed(object):
             print('WARN: {} is globally settled, check cer ({}) > force_settlement_price ({}).'.format(symbol, cer, force_settlement_price))
             if cer < force_settlement_price:
                 print('WARN: Overwrite CER for {} to force_settlement_price'.format(symbol))
-                cer = force_settlement_price
+                cer = force_settlement_price.as_base(symbol)
 
-        return cer
+        return float(cer)
 
     def get_sources(self, symbol):
         sources = self.assetconf(symbol, "sources")
