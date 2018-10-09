@@ -119,7 +119,7 @@ class Feed(object):
         if (datetime.now(timezone.utc) - feed_age).total_seconds() > self.assetconf(symbol, "maxage"):
             self.price_result[symbol]["flags"].append("over_max_age")
 
-    def get_cer(self, symbol, price):
+    def get_cer(self, symbol, price, asset):
         if self.assethasconf(symbol, "core_exchange_rate"):
             cer = self.assetconf(symbol, "core_exchange_rate")
             required = ["orientation", "factor", "ref_ticker", "ref_ticker_attribute"]
@@ -131,10 +131,19 @@ class Feed(object):
             price = ticker[cer["ref_ticker_attribute"]]
             price *= cer["factor"]
             orientation = Market(cer["orientation"])
-            return price.as_quote(orientation["quote"]["symbol"])
+            cer = price.as_quote(orientation["quote"]["symbol"])
+        else:
+            cer = price * self.assetconf(symbol, "core_exchange_factor")
         
-        return price * self.assetconf(symbol, "core_exchange_factor")
+        is_global_settled = bool(int(asset['bitasset_data']['settlement_fund']) != 0)
+        if is_global_settled:
+            force_settlement_price = Price(asset['bitasset_data']['settlement_price'])
+            print('WARN: {} is globally settled, check cer ({}) > force_settlement_price ({}).'.format(symbol, cer, force_settlement_price))
+            if cer < force_settlement_price:
+                print('WARN: Overwrite CER for {} to force_settlement_price'.format(symbol))
+                cer = force_settlement_price.as_base(symbol)
 
+        return float(cer)
 
     def get_sources(self, symbol):
         sources = self.assetconf(symbol, "sources")
@@ -650,7 +659,7 @@ class Feed(object):
 
         (premium, target_price, details) = self.compute_target_price(symbol, backing_symbol, p)
 
-        cer = self.get_cer(symbol, target_price)
+        cer = self.get_cer(symbol, target_price, asset)
 
         # price conversion to "price for one symbol" i.e.  base=*, quote=symbol
         self.price_result[symbol] = {
