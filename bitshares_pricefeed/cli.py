@@ -5,7 +5,6 @@ import click
 import os
 import logging
 from pprint import pprint
-from bitshares.storage import configStorage as config
 from bitshares.price import Price
 from bitshares.account import Account
 # from bitshares.asset import Asset
@@ -89,7 +88,7 @@ def addkey(ctx, key):
             click.echo("You can change these settings with:")
             click.echo("    uptick set default_account <account>")
             click.echo("=" * 30)
-            config["default_account"] = account["name"]
+            ctx.bitshares.set_default_account(account["name"])
 
 
 @main.command()
