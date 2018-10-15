@@ -137,11 +137,11 @@ class Feed(object):
         
         is_global_settled = bool(int(asset['bitasset_data']['settlement_fund']) != 0)
         if is_global_settled:
-            force_settlement_price = Price(asset['bitasset_data']['settlement_price'])
-            print('WARN: {} is globally settled, check cer ({}) > force_settlement_price ({}).'.format(symbol, cer, force_settlement_price))
-            if cer < force_settlement_price:
-                print('WARN: Overwrite CER for {} to force_settlement_price'.format(symbol))
-                cer = force_settlement_price.as_base(symbol)
+            global_settlement_price = Price(asset['bitasset_data']['settlement_price'])
+            print('WARN: {} is globally settled, check cer ({}) > global_settlement_price ({}).'.format(symbol, cer, global_settlement_price))
+            if cer < global_settlement_price:
+                print('WARN: Overwrite CER for {} to global_settlement_price'.format(symbol))
+                cer = global_settlement_price.as_base(symbol)
 
         return float(cer)
 
