@@ -62,7 +62,7 @@ class CoinmarketcapPro(FeedSource):
     def _fetch(self):
         feed = {}
         url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol={}&convert={}'
-        headers = { **_request_headers, 'X-CMC_PRO_API_KEY': self.api_key }
+        headers = { **_request_headers, 'X-CMC_PRO_API_KEY': self.api_key } # pylint: disable=no-member
         all_quotes = ','.join(self.quotes)
         for base in self.bases:
             response = requests.get(url=url.format(all_quotes, base), headers=headers, timeout=self.timeout)

@@ -62,11 +62,11 @@ class FeedSource():
 
     def fetch(self):
         try:
-            feed = self._fetch()
+            feed = self._fetch() # pylint: disable=no-member
             if self.allowCache:
                 self.updateCache(feed)
             return feed
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             if not self.allowCache:
                 print("\n{0} encountered an error while loading live data.".format(type(self).__name__))

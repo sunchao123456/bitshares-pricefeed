@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 from . import FeedSource, fetch_all
 from operator import itemgetter
 import itertools
@@ -41,6 +42,7 @@ class Composite(FeedSource):
         return extracted_feeds
 
     def _select_feed(self, feeds):
+        # pylint: disable=no-member
         if self.aggregation_type == 'min':
             return min(feeds, key=itemgetter('price'))
         elif self.aggregation_type == 'max':

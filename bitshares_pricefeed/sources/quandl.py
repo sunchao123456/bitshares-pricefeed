@@ -3,7 +3,7 @@ import requests
 from . import FeedSource, _request_headers
 import quandl
 
-
+# pylint: disable=no-member
 class Quandl(FeedSource):  # Quandl using Python API client
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -16,7 +16,6 @@ class Quandl(FeedSource):  # Quandl using Python API client
         feed = {}
         for market in self.datasets:
             quote, base = market.split(":")
-            prices = []
             for dataset in self.datasets[market]:
                 data = quandl.get(dataset, rows=1, returns='numpy')
             self.add_rate(feed, base, quote, data[0][1], 1.0)

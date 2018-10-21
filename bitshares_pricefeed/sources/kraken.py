@@ -13,7 +13,7 @@ class Kraken(FeedSource):
                 pair = '{}{}'.format(quote.upper(), base.upper())
                 url = "https://api.kraken.com/0/public/Ticker?pair={}".format(pair)
                 response = requests.get(url=url, headers=_request_headers, timeout=self.timeout)
-                if response.status_code != requests.codes.ok:
+                if response.status_code != requests.codes.ok: # pylint: disable=no-member
                     print('No result on Kraken for {}'.format(pair))
                     continue
                 result = response.json()['result'][pair]

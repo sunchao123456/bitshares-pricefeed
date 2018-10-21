@@ -2,6 +2,7 @@ import requests
 from . import FeedSource, _request_headers
 
 
+# pylint: disable=no-member
 class BitsharesFeed(FeedSource):
     def _fetch(self):
         from bitshares.asset import Asset
