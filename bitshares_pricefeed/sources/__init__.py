@@ -33,3 +33,4 @@ from .magicwallet import MagicWallet
 from .hertz import Hertz
 from .hero import Hero
 from .kraken import Kraken
+from .coinbase import Coinbase
