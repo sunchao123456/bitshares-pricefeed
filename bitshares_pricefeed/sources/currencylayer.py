@@ -1,6 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
+# pylint: disable=no-member
 class CurrencyLayer(FeedSource):  # Hourly updated data over http with free subscription
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

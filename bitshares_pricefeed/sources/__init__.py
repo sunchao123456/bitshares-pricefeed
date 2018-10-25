@@ -34,3 +34,4 @@ from .hertz import Hertz
 from .hero import Hero
 from .sina import Sina
 from .kraken import Kraken
+from .coinbase import Coinbase

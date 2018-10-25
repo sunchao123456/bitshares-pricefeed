@@ -139,6 +139,7 @@ Bitcoin Venezuela | OK | Crypto | No | ticker from api with 15 minutes delay, no
 BitsharesFeed | OK | Crypto (MPA) | No | current feed price in Bitshares DEX, no volume.
 Bitstamp | OK | Crypto | No | last and volume (in quote currency) from CEX ticker api
 Bittrex | OK | Crypto | No | last and volume (in quote currency) from summary api (bulk)
+Coinbase | OK | Crypto | No | Use Coinbase Pro (ex GDAX) ticker api to get last and 24h volume.
 Coincap | OK | ALTCAP & ALTCAP.X | No | use provided market cap, no volume
 CoinEgg | OK | Crypto |No | last and volume (in quote currency) from CEX ticker api
 Coinmarketcap | Warn | Crypto | No | volume weighted average of all prices reported at each market, volume in USD, 5 minutes delay (see https://coinmarketcap.com/faq/). V1 API will be closed December 4th, 2018. 

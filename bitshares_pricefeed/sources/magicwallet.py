@@ -1,7 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
-
+# pylint: disable=no-member
 class MagicWallet(FeedSource):
 
     def __init__(self, *args, **kwargs):
@@ -24,7 +24,7 @@ class MagicWallet(FeedSource):
                 if (dcount + wcount) == 0:
                     return (1, 0)
                 return (round((dfiatcny + wfiatcny) / (dbitcny + wbitcny), 4), dcount + wcount)
-        raise Exception("Invalid period {}, should be one of: ".format(period, self.valid_periods))
+        raise Exception("Invalid period {}, should be one of: {}".format(period, self.valid_periods))
 
     def _fetch(self): 
         feed = {}

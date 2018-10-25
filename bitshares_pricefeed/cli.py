@@ -101,7 +101,7 @@ def create(ctx, example):
     """ Create config file
     """
     import shutil
-    this_dir, this_filename = os.path.split(__file__)
+    this_dir, _ = os.path.split(__file__)
     default_config_file = os.path.join(this_dir, "examples", example + ".yaml")
     config_file = ctx.obj["configfile"]
     shutil.copyfile(
@@ -272,4 +272,4 @@ def update(ctx, assets, dry_run, confirm_warning, skip_critical):
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pylint: disable=no-value-for-parameter

@@ -1,6 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
+# pylint: disable=no-member
 class WorldCoinIndex(FeedSource):  # Weighted average from WorldCoinIndex 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,7 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
-
+# pylint: disable=no-member
 class OpenExchangeRates(FeedSource):  # Hourly updated data with free subscription
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,6 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
+# pylint: disable=no-member
 class RobinHood(FeedSource): # Stocks prices from RobinHood: https://github.com/sanko/Robinhood
     def _extract_symbols(self):
         symbols_by_base = {}

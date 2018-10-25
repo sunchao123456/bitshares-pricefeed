@@ -1,7 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
-
+# pylint: disable=no-member
 class Fixer(FeedSource):  # fixer.io daily updated data from European Central Bank.
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

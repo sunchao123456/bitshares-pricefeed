@@ -1,6 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
+# pylint: disable=no-member
 class AlphaVantage(FeedSource):  # Alpha Vantage
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -13,7 +14,6 @@ class AlphaVantage(FeedSource):  # Alpha Vantage
             for quote in self.quotes:
                 if quote == base:
                     continue
-                ticker = "%s%s" % (quote, base)
                 url = (
                     'https://www.alphavantage.co/query'
                     '?function=CURRENCY_EXCHANGE_RATE&from_currency={quote}&to_currency={base}&apikey={apikey}'

@@ -1,6 +1,7 @@
 import requests
 from . import FeedSource, _request_headers
 
+# pylint: disable=no-member
 class Iex(FeedSource): # Stocks prices from iextrading.com
     def _extract_symbols(self):
         symbols_by_base = {}
