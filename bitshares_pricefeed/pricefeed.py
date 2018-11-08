@@ -438,7 +438,7 @@ class Feed(object):
 
             if mrate_old==0:
                 crate=1
-            elif 0.99<mrate<1.01:
+            elif 0.99<mrate<1.005:
                 if mrate<1:
                     crate=1-self.config["vblacne"]
                 else:
