@@ -483,7 +483,7 @@ class Feed(object):
             print("\033[1;31;40m最终C%s\033[0m" %  str(c))
 
             CNY=CNY*c
-            if CNY<self.config["minprice"]
+            if CNY<self.config["minprice"]:
                 CNY=self.config["minprice"]
             print("\033[1;31;40m最终CNY喂价%s\033[0m" %  str(CNY))
             sqlinsert="INSERT INTO record (btsprice, feedprice, cvalue,mrate,myfeedprice) \
