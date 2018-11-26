@@ -439,6 +439,8 @@ class Feed(object):
             if mrate_old==0:
                 crate=1
             elif 0.99<mrate<=1.005:
+                print("\033[1;31;40mmid value\033[0m")
+                sql="SELECT avg(cvalue) from record "+where
                 crate=1
             elif 0.985<mrate<=0.99:
                 if mrate<1:
