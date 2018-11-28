@@ -383,6 +383,22 @@ class Feed(object):
                     adjusted_price = dex_price * 1.096
                 else:
                     adjusted_price = dex_price * (1 + (4 * premium)) 
+        elif target_price_algorithm=="gugublack":
+            print("\033[1;31;40GUGUBLACK for CNY\033[0m") 
+            CNY=1/float(self.feed["bitshares"]["BTS"]["CNY"]["price"])
+            print("\033[1;31;40mCNY喂价%s\033[0m" %  str(CNY))
+            bitshares = BitShares()
+            asset=Asset("CNY", bitshares_instance=bitshares)
+            call_orders = asset.get_call_orders(limit=10)
+            minprice=float(call_orders[0]['collateral']/call_orders[0]['debt'])
+            saveprice=minprice*1.11
+            print("\033[1;31;40m黑天鹅价格%s\033[0m" %  str(minprice))
+            print("\033[1;31;40m黑天鹅价格1.11倍%s\033[0m" %  str(saveprice))
+            if CNY<minprice :
+                CNY=saveprice
+            print("\033[1;31;40m最终CNY喂价%s\033[0m" %  str(CNY))
+            print('OK')
+            adjusted_price=CNY
         elif target_price_algorithm=="gugu":
             print("\033[1;31;40mmagicwallet for CNY\033[0m") 
             print(self.feed["magicwallet"])
