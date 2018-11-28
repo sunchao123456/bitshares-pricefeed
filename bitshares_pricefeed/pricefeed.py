@@ -5,6 +5,7 @@ import time
 import json
 import os.path
 from math import fabs, sqrt
+from bitshares import BitShares
 from bitshares.instance import shared_bitshares_instance
 from bitshares.account import Account
 from bitshares.asset import Asset
@@ -483,8 +484,15 @@ class Feed(object):
             print("\033[1;31;40m最终C%s\033[0m" %  str(c))
 
             CNY=CNY*c
-            if CNY<self.config["minprice"]:
-                CNY=self.config["minprice"]
+            bitshares = BitShares()
+            asset=Asset("CNY", bitshares_instance=bitshares)
+            call_orders = asset.get_call_orders(limit=10)
+            minprice=float(call_orders[0]['collateral']/call_orders[0]['debt'])
+            saveprice=minprice*1.11
+            print("\033[1;31;40m黑天鹅价格%s\033[0m" %  str(minprice))
+            print("\033[1;31;40m黑天鹅价格1.11倍%s\033[0m" %  str(saveprice))
+            if CNY<minprice :
+                CNY=saveprice
             print("\033[1;31;40m最终CNY喂价%s\033[0m" %  str(CNY))
             sqlinsert="INSERT INTO record (btsprice, feedprice, cvalue,mrate,myfeedprice) \
             VALUES ('"+str(market.ticker()['latest'])+"','"+str(market.ticker()['baseSettlement_price'])+"','"+str(market.ticker()['baseSettlement_price']/market.ticker()['latest'])+"','"+str(mrate)+"','"+str(CNY)+"')"
